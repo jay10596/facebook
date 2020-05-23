@@ -3,10 +3,9 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Http\Resources\PostResource;
+use App\Http\Resources\Post as PostResource;
 use App\Http\Resources\PostCollection;
 use App\Http\Requests\PostRequest;
-
 
 use Auth;
 use App\Post;
@@ -16,7 +15,11 @@ class PostController extends Controller
 {
     public function index()
     {
-        return PostResource::collection(Auth::user()->posts()->latest()->get());
+        return new PostCollection(Auth::user()->posts()->latest()->get());
+
+        /*  //Without PostCollection
+            return PostResource::collection(Auth::user()->posts()->latest()->get());
+        */
     }
 
     public function create()

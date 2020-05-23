@@ -3,8 +3,10 @@
 namespace App\Http\Resources;
 
 use Illuminate\Http\Resources\Json\JsonResource;
+use App\Http\Resources\User as UserResource;
 
-class PostResource extends JsonResource
+
+class Post extends JsonResource
 {
     public function toArray($request)
     {
