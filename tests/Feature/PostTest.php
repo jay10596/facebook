@@ -122,6 +122,9 @@ class PostTest extends TestCase
     
                     'path' => $posts->last()->path
                 ]   
+            ],
+            'links' => [
+                'self' => '/posts'
             ]
         ]);
     }
@@ -136,7 +139,10 @@ class PostTest extends TestCase
         $response = $this->get('/api/posts');
     
         $response->assertExactJson([
-            'data' => []
+            'data' => [],
+            'links' => [
+                'self' => '/posts'
+            ]
         ]);
     }
 }
