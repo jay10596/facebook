@@ -9,6 +9,7 @@ use App\User;
 $factory->define(Post::class, function (Faker $faker) {
     return [
         'body' => $faker->text,
+        'avatar' => 'image.jpg',
         'user_id' => factory(User::class)
     ];
 });

@@ -1,12 +1,12 @@
 <template>
-    <div class="flex flex-col flex-1 h-screen overflow-y-hidden">
+    <div class="flex flex-col h-screen overflow-y-hidden">
         <Navbar />
 
         <div class="flex flex-1 overflow-y-hidden">
             <Sidebar />
 
             <div class="w-2/3 overflow-x-hidden">
-                <NewsFeed />
+                <router-view />
             </div>
         </div>
     </div>
@@ -21,6 +21,20 @@
         name: "App",
 
         components: {NewsFeed, Sidebar, Navbar},
+
+        mounted() {
+            this.$store.dispatch('fetchAuthUser');
+        },
+
+        created() {
+            this.$store.dispatch('getPageTitle', this.$route.meta.title)
+        },
+
+        watch: {
+            $route(to, from) {
+                this.$store.dispatch('getPageTitle', to.meta.title)
+            }
+        }
     }
 </script>
 
