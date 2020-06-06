@@ -8,6 +8,7 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Passport\HasApiTokens;
 
 use App\Post;
+use App\Friend;
 
 
 class User extends Authenticatable
@@ -36,4 +37,14 @@ class User extends Authenticatable
     {
         return $this->hasMany(Post::class);
     }
+
+    public function friends()
+    {
+        return $this->belongsToMany(User::class, 'friends', 'friend_id', 'user_id');
+    }
+
+    /*public function friends()
+    {
+        return $this->hasMany(Friend::class);
+    }*/
 }

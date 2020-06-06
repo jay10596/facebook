@@ -20,4 +20,8 @@ Route::middleware('auth:api')->group(function () {
     Route::apiResource('/posts', 'PostController');
     Route::apiResource('/users', 'UserController');
 
+    //FRIEND REQUEST
+    Route::post('/send-request', 'FriendController@sendRequest');
+    Route::post('/confirm-request', 'FriendController@confirmRequest');
+    Route::post('/delete-request', 'FriendController@deleteRequest');
 });
