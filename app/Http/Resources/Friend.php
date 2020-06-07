@@ -13,6 +13,8 @@ class Friend extends JsonResource
             'id' => $this->id,
             'status' => $this->status,
             'confirmed_at' => optional($this->confirmed_at)->diffForHumans(), //optional is used for the fields which are nullable
+            'user_id' => $this->user_id,
+            'friend_id' => $this->friend_id,
             'path' => url('/users/'.$this->friend_id)
         ];
     }

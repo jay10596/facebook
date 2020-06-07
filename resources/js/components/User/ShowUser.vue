@@ -10,9 +10,25 @@
 
                 <p class="text-2xl text-gray-100 ml-3 shadow-2xl">{{user.name}}</p>
             </div>
+
+            <div class="absolute flex items-center bottom-0 right-0 mb-4 z-20 mx-4">
+                <button v-if="friendButton && friendButton !== 'Accept'" @click="sendFriendRequest" class="py-1 px-3 bg-gray-400 rounded">
+                    <i class="fas fa-user-plus"></i> {{friendButton}}
+                </button>
+
+                <button v-if="friendButton && friendButton === 'Accept'" @click="acceptFriendRequest" class="py-1 px-3 bg-blue-500 mr-2 rounded">
+                    <i class="fas fa-user-check"></i> Accept
+                </button>
+
+                <button v-if="friendButton && friendButton === 'Accept'" @click="deleteFriendRequest" class="py-1 px-3 bg-gray-400 mr-2 rounded">
+                    <i class="fas fa-user-times"></i> Delete
+                </button>
+            </div>
         </div>
 
         <div class="flex flex-col items-center py-4">
+            <p v-if="status.posts == 'loading' && posts.length < 1">Loading Posts...</p>
+
             <PostCard v-for="post in posts" :key="post.id" :post="post"/>
         </div>
     </div>
@@ -20,25 +36,39 @@
 
 <script>
     import PostCard from "../Extra/PostCard";
+    import { mapGetters } from 'vuex'
 
     export default {
         name: "ShowUser",
 
         components: {PostCard},
 
-        data() {
-            return {
-                user: '',
-                posts: ''
-            }
+        computed: {
+            ...mapGetters({
+                user: 'user',
+                posts: 'posts',
+                friendButton: 'friendButton',
+                errors: 'errors',
+                status: 'status'
+            })
         },
 
         created() {
-            axios.get(`/api/users/${this.$route.params.id}`)
-                .then(res => {
-                    this.user = res.data[0]
-                    this.posts = res.data[1].data
-                })
+            this.$store.dispatch('fetchUserAndPosts', this.$route.params.userId)
+        },
+
+        methods: {
+            sendFriendRequest() {
+                this.$store.dispatch('sendRequest', this.$route.params.userId)
+            },
+
+            acceptFriendRequest() {
+                this.$store.dispatch('acceptRequest', this.$route.params.userId)
+            },
+
+            deleteFriendRequest() {
+                this.$store.dispatch('deleteRequest', this.$route.params.userId)
+            },
         }
     }
 </script>

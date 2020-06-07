@@ -43,7 +43,8 @@ class FriendController extends Controller
         }
 
         //Attach is used for many to many (belongsToMany) relationship.
-        $user->friends()->attach(Auth::user());
+        //Attach will cause repeat the same values in database. In the migration unique has been added which is why attach will try to add the same user_id and friend_id and it will give integrity constrain error.
+        $user->friends()->syncWithoutDetaching(Auth::user());
 
         /*If you want to use hasMany instead of belongsToMany you have to use create
             $user->friends()->create([

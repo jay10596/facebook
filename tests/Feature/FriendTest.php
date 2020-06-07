@@ -75,6 +75,8 @@ class FriendTest extends TestCase
                 'id' => $friendRequest->id,
                 'status' => $friendRequest->status,
                 'confirmed_at' => $friendRequest->confirmed_at->diffForHumans(),
+                'friend_id' => $friendRequest->friend_id,
+                'user_id' => $friendRequest->user_id,
                 'path' => url('/users/'.$friendRequest->friend_id)
             ]
         ]);
@@ -336,5 +338,22 @@ class FriendTest extends TestCase
         $responseString = json_decode($response->getContent(), true); //true will convert the object into array
 
         $this->assertArrayHasKey('user_id', $responseString['errors']['meta']);
+    }
+
+    /** @test */
+    public function auth_user_can_send_friend_request_only_once()
+    {
+        $this->withoutExceptionHandling();
+        $this->actingAs($user1 = factory(User::class)->create(), 'api'); //It just logs in the user
+
+        $user2 = factory(User::class)->create();
+
+        $this->post('/api/send-request', ['friend_id' => $user2->id])->assertStatus(200);
+
+        $this->post('/api/send-request', ['friend_id' => $user2->id])->assertStatus(200);
+
+        $friendRequest = Friend::all(); //To grab first row from the friend's table
+
+        $this->assertCount(1, $friendRequest);
     }
 }

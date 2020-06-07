@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Friend;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use App\Http\Resources\UserResource;
@@ -22,7 +23,7 @@ class PostTest extends TestCase
 
     protected $post;
 
-    protected function setUp(): void 
+    protected function setUp(): void
     {
         parent::setUp();
 
@@ -62,15 +63,15 @@ class PostTest extends TestCase
 
         $this->assertEquals('This is a new post.', $post->body);
         $this->assertEquals($post->user_id, $this->user->id);
-    
-    
+
+
         $response->assertJson([
             'data' => [
                 'id' => $post->id,
                 'body' => $post->body,
                 'user_id' => $post->user_id,
                 'created_at' => $post->created_at->diffForHumans(),
-                
+
                 'posted_by' => [
                     'id' => $this->user->id,
                     'name' => $this->user->name,
@@ -82,16 +83,25 @@ class PostTest extends TestCase
         ]);
     }
 
-    /** @test */ 
-    //actingAs is another way to login if you don't want pass the token   
-    public function auth_user_can_fetch_only_his_posts() 
-    {        
-        $this->actingAs($user = factory(User::class)->create(), 'api'); //It just logs in the user
+    /** @test */
+    //actingAs is another way to login if you don't want pass the token
+    public function auth_user_can_fetch_all_posts_of_his_friends()
+    {
+        $this->actingAs($user1 = factory(User::class)->create(), 'api'); //It just logs in the user
 
-        $posts = factory(Post::class, 2)->create(['user_id' => $user->id]);
+        $user2 = factory(User::class)->create();
+
+        $posts = factory(Post::class, 2)->create(['user_id' => $user2->id]);
+
+        Friend::create([
+            'user_id' => $user1->id,
+            'friend_id' => $user2->id,
+            'confirmed_at' => now(),
+            'status' => 1
+        ]);
 
         $response = $this->get('/api/posts');
-    
+
         $response->assertJson([
             'data' => [
                 [
@@ -99,13 +109,13 @@ class PostTest extends TestCase
                     'body' => $posts->first()->body,
                     'user_id' => $posts->first()->user_id,
                     'created_at' => $posts->first()->created_at->diffForHumans(),
-                    
+
                     'posted_by' => [
-                        'id' => $user->id,
-                        'name' => $user->name,
-                        'email' => $user->email,
+                        'id' => $user2->id,
+                        'name' => $user2->name,
+                        'email' => $user2->email,
                     ],
-    
+
                     'path' => $posts->first()->path
                 ],
                 [
@@ -113,15 +123,15 @@ class PostTest extends TestCase
                     'body' => $posts->last()->body,
                     'user_id' => $posts->last()->user_id,
                     'created_at' => $posts->last()->created_at->diffForHumans(),
-                    
+
                     'posted_by' => [
-                        'id' => $user->id,
-                        'name' => $user->name,
-                        'email' => $user->email,
+                        'id' => $user2->id,
+                        'name' => $user2->name,
+                        'email' => $user2->email,
                     ],
-    
+
                     'path' => $posts->last()->path
-                ]   
+                ]
             ],
             'links' => [
                 'self' => '/posts'
@@ -129,15 +139,15 @@ class PostTest extends TestCase
         ]);
     }
 
-    /** @test */ 
-    public function auth_user_cannot_fetch_others_posts() 
-    {        
-        $this->actingAs($user = factory(User::class)->create(), 'api'); 
+    /** @test */
+    public function auth_user_cannot_fetch_others_posts()
+    {
+        $this->actingAs($user = factory(User::class)->create(), 'api');
 
         $posts = factory(Post::class, 2)->create(); //These posts do not belong to logged in user
 
         $response = $this->get('/api/posts');
-    
+
         $response->assertExactJson([
             'data' => [],
             'links' => [

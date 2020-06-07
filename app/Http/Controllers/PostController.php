@@ -9,13 +9,21 @@ use App\Http\Requests\PostRequest;
 
 use Auth;
 use App\Post;
+use App\Friend;
 
 
 class PostController extends Controller
 {
     public function index()
     {
-        return new PostCollection(Auth::user()->posts()->latest()->get());
+        $friends = Friend::retrieveFriendships();
+
+        if ($friends->isEmpty()) {
+            return new PostCollection(Auth::user()->posts()->latest()->get());
+        }
+
+        return new PostCollection(Post::whereIn('user_id', [$friends->pluck('user_id'), $friends->pluck('friend_id')])->get());
+
 
         /*  //Without PostCollection
             return PostResource::collection(Auth::user()->posts()->latest()->get());
@@ -28,17 +36,17 @@ class PostController extends Controller
     }
 
     public function store(PostRequest $request)
-    {         
-        $post = Auth::user()->posts()->create($request->all()); 
+    {
+        $post = Auth::user()->posts()->create($request->all());
 
         /*  //Another way to validate if PostRequest is not made
             $data = request()->validate([
                 'body' => 'required'
             ]);
 
-            $post = Auth::user()->posts()->create($data); 
+            $post = Auth::user()->posts()->create($data);
 
-            
+
             //Another way to create post
             $post = Post::create([
                 'body' => $request->body,

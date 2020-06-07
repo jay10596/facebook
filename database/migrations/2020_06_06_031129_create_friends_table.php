@@ -16,6 +16,7 @@ class CreateFriendsTable extends Migration
             $table->timestamp('confirmed_at')->nullable();
             $table->timestamps();
 
+            $table->unique(['user_id', 'friend_id']);
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
         });
     }

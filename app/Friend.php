@@ -21,7 +21,15 @@ class Friend extends Model
             ->where('friend_id', auth()->user()->id)
             ->where('user_id', $userId);
         })->first();
+    }
 
-
+    public static function retrieveFriendships()
+    {
+        return (new static())
+            ->whereNotNull('confirmed_at')
+            ->where(function ($query) {
+                return $query->where('user_id', auth()->user()->id)
+                    ->orWhere('user_id', auth()->user()->id);
+            })->get();
     }
 }
