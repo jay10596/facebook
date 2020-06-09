@@ -22,13 +22,13 @@
         </div>
 
         <div class="flex justify-between p-4 text-sm">
-            <p><i class="fas fa-thumbs-up text-blue-500 mr-1"></i> Jane Smith and 147 others</p>
+            <p><i class="far fa-thumbs-up text-blue-500 mr-1"></i>{{post.likes.like_count}} Likes</p>
 
-            <p>24 comments</p>
+            <p>24 Comments</p>
         </div>
 
         <div class="flex justify-between items-center m-4 border-1 border-gray-400">
-            <button class="w-full hover:text-blue-500"><i class="far fa-thumbs-up mr-1"></i> Like</button>
+            <button @click="clickPost(post.id, $vnode.key)" :class="[post.likes.user_liked ? 'w-full text-blue-500 focus:outline-none' : 'w-full hover:text-blue-500 focus:outline-none']"><i class="far fa-thumbs-up mr-1"></i> Like</button>
             <button class="w-full hover:text-gray-600"><i class="far fa-comments mr-1"></i> Comments</button>
         </div>
     </div>
@@ -38,7 +38,13 @@
     export default {
         name: "PostCard",
 
-        props:['post']
+        props:['post'],
+
+        methods: {
+            clickPost(post_id, index) {
+                this.$store.dispatch('likeDislikePost', {post_id, index})
+            }
+        }
     }
 </script>
 

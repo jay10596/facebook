@@ -22,7 +22,7 @@ class PostController extends Controller
             return new PostCollection(Auth::user()->posts()->latest()->get());
         }
 
-        return new PostCollection(Post::whereIn('user_id', [$friends->pluck('user_id'), $friends->pluck('friend_id')])->get());
+        return new PostCollection(Post::whereIn('user_id', [$friends->pluck('user_id'), $friends->pluck('friend_id')])->latest()->get());
 
 
         /*  //Without PostCollection

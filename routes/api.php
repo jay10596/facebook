@@ -24,4 +24,7 @@ Route::middleware('auth:api')->group(function () {
     Route::post('/send-request', 'FriendController@sendRequest');
     Route::post('/confirm-request', 'FriendController@confirmRequest');
     Route::post('/delete-request', 'FriendController@deleteRequest');
+
+    //LIKE
+    Route::post('/posts/{post}/like-dislike', 'LikeController@likeDislike');
 });

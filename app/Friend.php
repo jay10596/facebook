@@ -29,7 +29,7 @@ class Friend extends Model
             ->whereNotNull('confirmed_at')
             ->where(function ($query) {
                 return $query->where('user_id', auth()->user()->id)
-                    ->orWhere('user_id', auth()->user()->id);
+                    ->orWhere('friend_id', auth()->user()->id);
             })->get();
     }
 }

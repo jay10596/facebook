@@ -1,10 +1,13 @@
 <template>
     <div class="flex flex-col items-center py-4">
-        <PostCard v-for="post in posts" :key="post.id" :post="post"/>
+        <p v-if="status == 'loading'">Loading Posts...</p>
+
+        <PostCard v-else v-for="(post, index) in posts" :key="index" :post="post"/>
     </div>
 </template>
 
 <script>
+    import { mapGetters } from "vuex";
     import PostCard from "../Extra/PostCard";
 
     export default {
@@ -12,15 +15,15 @@
 
         components: {PostCard},
 
-        data() {
-            return {
-                posts: null,
-            }
+        computed: {
+            ...mapGetters({
+                posts: 'allPosts',
+                status: 'allPostsStatus'
+            })
         },
 
         created() {
-            axios.get('api/posts')
-                .then(res => this.posts = res.data.data)
+            this.$store.dispatch('fetchAllPosts');
         }
     }
 </script>
