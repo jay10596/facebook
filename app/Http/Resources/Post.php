@@ -19,6 +19,8 @@ class Post extends JsonResource
 
             'likes' => new LikeCollection($this->likes),
 
+            'comments' => new CommentCollection($this->comments),
+
             'posted_by' => new UserResource($this->user),
 
             'path' => $this->path,

@@ -1,17 +1,17 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
-import User from './modules/user.js'
+import Auth from './modules/auth.js'
 import Title from './modules/title.js'
-import Profile from './modules/profile.js'
+import Request from './modules/request.js'
 import Posts from './modules/posts.js'
 
 Vue.use(Vuex);
 
 export default new Vuex.Store({
     modules: {
-        User,
+        Auth,
         Title,
-        Profile,
+        Request,
         Posts
     }
 });

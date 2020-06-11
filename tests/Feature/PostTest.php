@@ -155,4 +155,53 @@ class PostTest extends TestCase
             ]
         ]);
     }
+
+    /** @test */
+    public function auth_user_can_update_text_post()
+    {
+        $this->actingAs($user = factory(User::class)->create(), 'api'); //It just logs in the user
+
+        $post = factory(Post::class)->create(['user_id' => $user->id]);
+
+        $response = $this->put('/api/posts/' . $post->id, ['body' => 'An updated post']);
+
+        $response->assertStatus(201);
+
+        $post = Post::first();
+
+        $this->assertEquals('An updated post', $post->body);
+
+        $response->assertJson([
+            'data' => [
+                'id' => $post->id,
+                'body' => 'An updated post',
+                'user_id' => $post->user_id,
+                'created_at' => $post->created_at->diffForHumans(),
+
+                'posted_by' => [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                ],
+
+                'path' => $post->path
+            ]
+        ]);
+    }
+
+    /** @test */
+    public function auth_user_can_delete_text_post()
+    {
+        $this->actingAs($user = factory(User::class)->create(), 'api'); //It just logs in the user
+
+        $post = factory(Post::class)->create(['user_id' => $user->id]);
+
+        $response = $this->delete('/api/posts/' . $post->id);
+
+        $response->assertStatus(204);
+
+        $posts = Post::all();
+
+        $this->assertCount(0, $posts);
+    }
 }

@@ -6,15 +6,21 @@ use Illuminate\Database\Eloquent\Model;
 use App\Scopes\ReverseScope;
 
 use App\User;
+use App\Comment;
+
 
 class Post extends Model
 {
     protected $fillable = ['body', 'user_id'];
 
-
     public function getPathAttribute()
     {
         return "/posts/$this->id";
+    }
+
+    public function comments()
+    {
+        return $this->hasMany(Comment::class)->latest();;
     }
 
     public function user()

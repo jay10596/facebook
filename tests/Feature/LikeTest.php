@@ -37,15 +37,16 @@ class LikeTest extends TestCase
                     'path' => url('/posts/' . $post->id),
                 ]
             ],
+            'like_count' => 1,
+            'user_liked' => true,
             'links' => [
                 'self' => '/posts',
             ],
         ]);
     }
 
-
     /** @test */
-    public function posts_are_return_with_likes()
+    public function posts_are_returned_with_likes()
     {
         $this->withoutExceptionHandling();
 
@@ -75,6 +76,8 @@ class LikeTest extends TestCase
                                 'path' => url('/posts/' . $post->id),
                             ]
                         ],
+                        'like_count' => 1,
+                        'user_liked' => true,
                         'links' => [
                             'self' => '/posts',
                         ]

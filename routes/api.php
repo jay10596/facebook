@@ -19,6 +19,7 @@ Route::middleware('auth:api')->group(function () {
     //CRUD
     Route::apiResource('/posts', 'PostController');
     Route::apiResource('/users', 'UserController');
+    Route::apiResource('/posts/{post}/comments', 'CommentController');
 
     //FRIEND REQUEST
     Route::post('/send-request', 'FriendController@sendRequest');

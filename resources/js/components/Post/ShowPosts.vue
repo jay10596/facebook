@@ -17,8 +17,8 @@
 
         computed: {
             ...mapGetters({
-                posts: 'allPosts',
-                status: 'allPostsStatus'
+                posts: 'posts',
+                status: 'postStatus'
             })
         },
 

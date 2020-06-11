@@ -30,11 +30,6 @@ class PostController extends Controller
         */
     }
 
-    public function create()
-    {
-        //
-    }
-
     public function store(PostRequest $request)
     {
         $post = Auth::user()->posts()->create($request->all());
@@ -59,21 +54,20 @@ class PostController extends Controller
 
     public function show(Post $post)
     {
-        //
+        return new PostResource($post);
     }
 
-    public function edit(Post $post)
+    public function update(PostRequest $request, Post $post)
     {
-        //
-    }
+        $post->update($request->all());
 
-    public function update(Request $request, Post $post)
-    {
-        //
+        return (new PostResource($post))->response()->setStatusCode(201);
     }
 
     public function destroy(Post $post)
     {
-        //
+        $post->delete();
+
+        return response('Deleted', 204);
     }
 }

@@ -29,7 +29,7 @@
         <div class="flex flex-col items-center py-4">
             <p v-if="status.posts == 'loading' && posts.length < 1">Loading Posts...</p>
 
-            <PostCard v-for="post in posts" :key="post.id" :post="post"/>
+            <PostCard v-else v-for="(post, index) in posts" :key="index" :post="post"/>
         </div>
     </div>
 </template>
@@ -48,13 +48,14 @@
                 user: 'user',
                 posts: 'posts',
                 friendButton: 'friendButton',
-                errors: 'errors',
+                userErrors: 'userErrors',
                 status: 'status'
             })
         },
 
         created() {
-            this.$store.dispatch('fetchUserAndPosts', this.$route.params.userId)
+            this.$store.dispatch('fetchUser', this.$route.params.userId)
+            this.$store.dispatch('fetchUserPosts', this.$route.params.userId)
         },
 
         methods: {
