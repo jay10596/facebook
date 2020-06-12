@@ -28,4 +28,7 @@ Route::middleware('auth:api')->group(function () {
 
     //LIKE
     Route::post('/posts/{post}/like-dislike', 'LikeController@likeDislike');
+
+    //IMAGE
+    Route::post('/upload-images', 'ImageController@uploadImage');
 });

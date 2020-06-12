@@ -10,6 +10,7 @@ use Laravel\Passport\HasApiTokens;
 use App\Post;
 use App\Comment;
 use App\Friend;
+use App\Image;
 
 
 class User extends Authenticatable
@@ -52,6 +53,37 @@ class User extends Authenticatable
     public function likes()
     {
         return $this->belongsToMany(Post::class, 'likes', 'user_id', 'post_id');
+    }
+
+    public function images()
+    {
+        return $this->hasMany(Image::class);
+    }
+
+    public function coverImage()
+    {
+        return $this->hasOne(Image::class)
+            ->orderByDesc('id')
+            ->where('type', 'cover')
+            ->withDefault(function ($image) {
+                $image->path = 'uploadedImages/cover.jpg';
+                $image->width = 1500;
+                $image->height = 500;
+                $image->type = 'cover';
+            });
+    }
+
+    public function profileImage()
+    {
+        return $this->hasOne(Image::class)
+            ->orderByDesc('id')
+            ->where('type', 'profile')
+            ->withDefault(function ($image) {
+                $image->path = 'uploadedImages/profile.png';
+                $image->width = 750;
+                $image->height = 750;
+                $image->type = 'profile';
+            });
     }
 
     /*public function friends()

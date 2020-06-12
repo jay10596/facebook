@@ -1,11 +1,11 @@
 const state = {
-    user: '',
-    userStatus: ''
+    authUser: '',
+    authUserStatus: ''
 };
 
 const getters = {
     authUser: state => {
-        return state.user;
+        return state.authUser;
     }
 };
 
@@ -19,7 +19,7 @@ const actions = {
 
 const mutations = {
     setAuthUser(state, user) {
-        state.user = user;
+        state.authUser = user;
     }
 };
 

@@ -14,12 +14,12 @@ const getters = {
     },
 
     friendButton: (state, getters, rootState)=> {
-        if(rootState.Auth.user.id == state.user.id) {
+        if(rootState.Auth.authUser.id == state.user.id) {
             return;
         } else if (getters.friendship == null) {
             return 'Add Friend';
         } else if (getters.friendship.confirmed_at == null
-            && getters.friendship.friend_id !== rootState.User.user.id) {
+            && getters.friendship.friend_id !== rootState.Auth.authUser.id) {
             return 'Pending Request';
         } else if (getters.friendship.confirmed_at !== null)
             return '';
