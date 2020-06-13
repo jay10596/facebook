@@ -11,7 +11,7 @@ use App\Comment;
 
 class Post extends Model
 {
-    protected $fillable = ['body', 'user_id'];
+    protected $fillable = ['body', 'image', 'user_id'];
 
     public function getPathAttribute()
     {

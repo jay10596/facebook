@@ -11,7 +11,7 @@ use App\User;
 $factory->define(Post::class, function (Faker $faker) {
     return [
         'body' => $faker->text,
-        'avatar' => 'image.jpg',
+        'image' => 'image.jpg',
         'user_id' => function() {
             return User::all()->random();
         }

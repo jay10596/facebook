@@ -2,9 +2,7 @@ const state = {
     posts: '',
     postStatus: '',
     postErrors: null,
-    postForm: {
-        body: '',
-    },
+    body: '',
 };
 
 const getters = {
@@ -20,8 +18,8 @@ const getters = {
         return state.postErrors;
     },
 
-    postForm: state => {
-        return state.postForm;
+    body: state => {
+        return state.body;
     }
 };
 
@@ -47,10 +45,10 @@ const actions = {
     },
 
     createPost({commit, state}) {
-        axios.post('/api/posts', state.postForm)
+        axios.post('/api/posts', {body: state.body})
             .then(res => {
                 commit('pushPost', res.data)
-                commit('updatePostForm', '')
+                commit('setPostBody', '')
             })
             .catch(err => commit('setPostErrors', err))
     },
@@ -59,7 +57,7 @@ const actions = {
         axios.put('/api/posts/' + post.id, {body: post.body})
             .then(res => {
                 commit('pushPost', res.data)
-                commit('updatePostForm', '')
+                commit('setPostBody', '')
             })
             .catch(err => commit('setPostErrors', err))
     },
@@ -102,8 +100,8 @@ const mutations = {
         state.postErrors = err.response
     },
 
-    updatePostForm(state, postForm) {
-        state.postForm.body = postForm
+    setPostBody(state, body) {
+        state.body = body
     },
 
     pushPost(state, newPost) {

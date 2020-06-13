@@ -10,6 +10,7 @@ use App\Http\Requests\PostRequest;
 use Auth;
 use App\Post;
 use App\Friend;
+use Intervention\Image\Facades\Image;
 
 
 class PostController extends Controller
@@ -30,24 +31,51 @@ class PostController extends Controller
         */
     }
 
-    public function store(PostRequest $request)
+    public function store()
     {
-        $post = Auth::user()->posts()->create($request->all());
+        /*  Different ways!
 
-        /*  //Another way to validate if PostRequest is not made
-            $data = request()->validate([
-                'body' => 'required'
-            ]);
+			$request['slug'] = Str::slug($request->title);
 
-            $post = Auth::user()->posts()->create($data);
+			$data = request()->validate([
+			    'body' => 'required'
+			]);
+				#OR
 
+			store(PostRequest $request)// Set new request rules
 
-            //Another way to create post
-            $post = Post::create([
-                'body' => $request->body,
-                'user_id' => Auth::user()->id
-            ]);
-        */
+			$post = Auth::user()->posts()->create($request->all());
+				#OR
+			$post = Auth::user()->posts()->create($data);
+				#OR
+			$post = Post::create([
+				'body' => $request->body,
+				'user_id' => Auth::user()->id
+			]);
+		*/
+
+        $data = request()->validate([
+            'body' => '',
+            'image' => '',
+            'width' => '',
+            'height' => ''
+        ]);
+
+        if (isset($data['image'])) {
+            //Store image in the storage
+            $image = $data['image']->store('uploadedPostImages', 'public');
+
+            //Resize image
+            Image::make($data['image'])
+                ->fit($data['width'], $data['height'])
+                ->save(storage_path('app/public/uploadedPostImages/' . $data['image']->hashName()));
+        }
+
+        //Store body and image in the database
+        $post = request()->user()->posts()->create([
+            'body' => $data['body'],
+            'image' => $image ?? null,
+        ]);
 
         return (new PostResource($post))->response()->setStatusCode(201);
     }

@@ -6919,6 +6919,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! lodash */ "./node_modules/lodash/lodash.js");
 /* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(lodash__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var vuex__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! vuex */ "./node_modules/vuex/dist/vuex.esm.js");
+/* harmony import */ var dropzone__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! dropzone */ "./node_modules/dropzone/dist/dropzone.js");
+/* harmony import */ var dropzone__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(dropzone__WEBPACK_IMPORTED_MODULE_2__);
 function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
 
 function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
@@ -6961,6 +6963,24 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+
 
 
 /* harmony default export */ __webpack_exports__["default"] = ({
@@ -6969,34 +6989,83 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
     return {
       editMode: false,
       post: '',
-      originalPost: ''
+      originalPost: '',
+      dropzone: null
     };
+  },
+  mounted: function mounted() {
+    this.dropzone = new dropzone__WEBPACK_IMPORTED_MODULE_2___default.a(this.$refs.postImage, this.settings);
   },
   computed: _objectSpread(_objectSpread({}, Object(vuex__WEBPACK_IMPORTED_MODULE_1__["mapGetters"])({
     authUser: 'authUser'
   })), {}, {
-    postForm: {
+    body: {
       get: function get() {
-        return this.$store.getters.postForm;
+        return this.$store.getters.body;
       },
       //_.debounce (function is to make sure the form is not updated after every character that user types.
-      set: lodash__WEBPACK_IMPORTED_MODULE_0___default.a.debounce(function (postForm) {
-        return this.$store.commit('updatePostForm', postForm);
+      set: lodash__WEBPACK_IMPORTED_MODULE_0___default.a.debounce(function (body) {
+        return this.$store.commit('setPostBody', body);
       }, 1000)
+    },
+    settings: function settings() {
+      var _this = this;
+
+      return {
+        paramName: 'image',
+        //field name is image
+        url: '/api/posts',
+        acceptedFiles: 'image/*',
+        clickable: '.dz-clickable',
+        //<i> will not work as it is not a button. To make sure all the inner elements of button are clickable.
+        autoProcessQueue: false,
+        //When the image is uploaded, it sends it right away which will give the error becasue we do not have the body in params.
+        previewsContainer: '.dropzone-previews',
+        previewTemplate: document.querySelector('#dz-template').innerHTML,
+        maxFiles: 1,
+        params: {
+          //Cannot pass body here because settings() load when the component is mounted. Use sending.
+          'width': 750,
+          'height': 750
+        },
+        headers: {
+          'X-CSRF-TOKEN': document.head.querySelector('meta[name=csrf-token]').content
+        },
+        sending: function sending(file, xhr, postForm) {
+          postForm.append('body', _this.$store.getters.body);
+        },
+        success: function success(e, res) {
+          _this.dropzone.removeAllFiles();
+
+          _this.$store.commit('setPostBody', ''); //this.$store.dispatch('fetchAllPosts') Works but takes more time to load all posts
+
+
+          _this.$store.commit('pushPost', res);
+        },
+        maxfilesexceeded: function maxfilesexceeded(file) {
+          _this.dropzone.removeAllFiles();
+
+          _this.dropzone.addFile(file);
+        }
+      };
     }
   }),
   created: function created() {
-    var _this = this;
+    var _this2 = this;
 
     EventBus.$on('changingEditMode', function (post) {
-      _this.editMode = true;
-      _this.post = post;
-      _this.originalBody = post.body;
+      _this2.editMode = true;
+      _this2.post = post;
+      _this2.originalBody = post.body;
     });
   },
   methods: {
     postMessage: function postMessage() {
-      this.$store.dispatch('createPost');
+      if (this.dropzone.getAcceptedFiles().length) {
+        this.dropzone.processQueue();
+      } else {
+        this.$store.dispatch('createPost');
+      }
     },
     updateMessage: function updateMessage(post) {
       this.$store.dispatch('updatePost', post);
@@ -29486,8 +29555,10 @@ var render = function() {
         ])
       ]),
       _vm._v(" "),
-      _vm.post.avatar
-        ? _c("div", [_c("img", { attrs: { src: _vm.post.avatar, alt: "" } })])
+      _vm.post.image
+        ? _c("div", [
+            _c("img", { attrs: { src: "/storage/" + _vm.post.image, alt: "" } })
+          ])
         : _vm._e(),
       _vm._v(" "),
       _c("div", { staticClass: "flex justify-between p-4 text-sm" }, [
@@ -29860,20 +29931,20 @@ var render = function() {
               {
                 name: "model",
                 rawName: "v-model",
-                value: _vm.postForm.body,
-                expression: "postForm.body"
+                value: _vm.body,
+                expression: "body"
               }
             ],
             staticClass:
               "flex-auto mx-4 h-8 pl-4 rounded-full bg-gray-200 focus:outline-none focus:shadow-outline",
             attrs: { type: "text", placeholder: "Add a post" },
-            domProps: { value: _vm.postForm.body },
+            domProps: { value: _vm.body },
             on: {
               input: function($event) {
                 if ($event.target.composing) {
                   return
                 }
-                _vm.$set(_vm.postForm, "body", $event.target.value)
+                _vm.body = $event.target.value
               }
             }
           })
@@ -29905,7 +29976,7 @@ var render = function() {
             "div",
             [
               _c("transition", { attrs: { name: "fade" } }, [
-                _vm.postForm.body
+                _vm.body
                   ? _c(
                       "button",
                       {
@@ -29917,7 +29988,15 @@ var render = function() {
                   : _vm._e()
               ]),
               _vm._v(" "),
-              _vm._m(0)
+              _c(
+                "button",
+                {
+                  ref: "postImage",
+                  staticClass:
+                    "dz-clickable w-8 h-8 rounded-full text-xl bg-gray-200 focus:outline-none"
+                },
+                [_vm._m(0)]
+              )
             ],
             1
           )
@@ -29958,7 +30037,9 @@ var render = function() {
             ],
             1
           )
-    ])
+    ]),
+    _vm._v(" "),
+    _vm._m(1)
   ])
 }
 var staticRenderFns = [
@@ -29966,11 +30047,45 @@ var staticRenderFns = [
     var _vm = this
     var _h = _vm.$createElement
     var _c = _vm._self._c || _h
-    return _c(
-      "button",
-      { staticClass: "w-8 h-8 rounded-full text-xl bg-gray-200" },
-      [_c("i", { staticClass: "fas fa-image" })]
-    )
+    return _c("p", { staticClass: "dz-clickable" }, [
+      _c("i", { staticClass: "fas fa-image" })
+    ])
+  },
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("div", { staticClass: "dropzone-previews" }, [
+      _c("div", { staticClass: "hidden", attrs: { id: "dz-template" } }, [
+        _c("div", { staticClass: "dz-preview dz-file-preview mt-4" }, [
+          _c("div", { staticClass: "dz-details" }, [
+            _c("img", {
+              staticClass: "w-32 h-32",
+              attrs: { "data-dz-thumbnail": "", alt: "" }
+            }),
+            _vm._v(" "),
+            _c(
+              "button",
+              {
+                staticClass: "mt-2 ml-6 text-sm focus:outline-none",
+                attrs: { "data-dz-remove": "" }
+              },
+              [
+                _c("i", { staticClass: "fas fa-minus-circle text-red-500" }),
+                _vm._v(" Remove")
+              ]
+            )
+          ]),
+          _vm._v(" "),
+          _c("div", { staticClass: "dz-progress" }, [
+            _c("span", {
+              staticClass: "dz-upload",
+              attrs: { "data-dz-upload": "" }
+            })
+          ])
+        ])
+      ])
+    ])
   }
 ]
 render._withStripped = true
@@ -47290,9 +47405,7 @@ var state = {
   posts: '',
   postStatus: '',
   postErrors: null,
-  postForm: {
-    body: ''
-  }
+  body: ''
 };
 var getters = {
   posts: function posts(state) {
@@ -47304,8 +47417,8 @@ var getters = {
   postErrors: function postErrors(state) {
     return state.postErrors;
   },
-  postForm: function postForm(state) {
-    return state.postForm;
+  body: function body(state) {
+    return state.body;
   }
 };
 var actions = {
@@ -47333,9 +47446,11 @@ var actions = {
   createPost: function createPost(_ref3) {
     var commit = _ref3.commit,
         state = _ref3.state;
-    axios.post('/api/posts', state.postForm).then(function (res) {
+    axios.post('/api/posts', {
+      body: state.body
+    }).then(function (res) {
       commit('pushPost', res.data);
-      commit('updatePostForm', '');
+      commit('setPostBody', '');
     })["catch"](function (err) {
       return commit('setPostErrors', err);
     });
@@ -47347,7 +47462,7 @@ var actions = {
       body: post.body
     }).then(function (res) {
       commit('pushPost', res.data);
-      commit('updatePostForm', '');
+      commit('setPostBody', '');
     })["catch"](function (err) {
       return commit('setPostErrors', err);
     });
@@ -47398,8 +47513,8 @@ var mutations = {
   setPostErrors: function setPostErrors(state, err) {
     state.postErrors = err.response;
   },
-  updatePostForm: function updatePostForm(state, postForm) {
-    state.postForm.body = postForm;
+  setPostBody: function setPostBody(state, body) {
+    state.body = body;
   },
   pushPost: function pushPost(state, newPost) {
     state.posts.unshift(newPost.data);

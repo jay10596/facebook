@@ -24,8 +24,8 @@
             </div>
         </div>
 
-        <div v-if="post.avatar">
-            <img :src="post.avatar" alt="">
+        <div v-if="post.image">
+            <img :src="'/storage/' + post.image" alt="">
         </div>
 
         <div class="flex justify-between p-4 text-sm">

@@ -6,7 +6,10 @@ use App\Friend;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use App\Http\Resources\UserResource;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
+use Illuminate\Support\Facades\Artisan;
 
 use App\User;
 use App\Post;
@@ -27,7 +30,7 @@ class PostTest extends TestCase
     {
         parent::setUp();
 
-        \Artisan::call('passport:install',['-vvv' => true]);
+        Artisan::call('passport:install',['-vvv' => true]);
 
         $this->user = factory(User::class)->create();
 
@@ -36,6 +39,8 @@ class PostTest extends TestCase
         $this->server = [
             'HTTP_Authorization' => 'Bearer '. $this->token
         ];
+
+        Storage::fake('public');
     }
 
     private function data()
@@ -76,6 +81,49 @@ class PostTest extends TestCase
                     'id' => $this->user->id,
                     'name' => $this->user->name,
                     'email' => $this->user->email,
+                ],
+
+                'path' => $post->path
+            ]
+        ]);
+    }
+
+    /** @test */
+    public function auth_user_can_create_image_post()
+    {
+        $this->withoutExceptionHandling();
+
+        $this->actingAs($user = factory(User::class)->create(), 'api'); //It just logs in the user
+
+        $file = UploadedFile::fake()->image('postImage.jpg');
+
+        $response = $this->post('/api/posts', [
+            'body' => 'test Body',
+            'image' => $file,
+            'width' => 750,
+            'height' => 750,
+            'user_id' => $user->id
+        ])->assertStatus(201);
+
+        Storage::disk('public')->assertExists('uploadedPostImages/' . $file->hashName());
+
+        $this->assertCount(1, Post::all());
+
+        $posts = Post::all();
+        $post = $posts->first();
+
+        $response->assertJson([
+            'data' => [
+                'id' => $post->id,
+                'body' => $post->body,
+                'image' => $post->image,
+                'user_id' => $post->user_id,
+                'created_at' => $post->created_at->diffForHumans(),
+
+                'posted_by' => [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
                 ],
 
                 'path' => $post->path

@@ -3,19 +3,19 @@
         <div class="flex justify-between items-center">
             <img class="w-8 h-8 object-cover rounded-full" :src="'/storage/' + authUser.profile_image.path" alt="Profile Image">
 
-            <input v-if="! editMode" v-model="postForm.body" type="text" class="flex-auto mx-4 h-8 pl-4 rounded-full bg-gray-200 focus:outline-none focus:shadow-outline" placeholder="Add a post">
+            <input v-if="! editMode" v-model="body" type="text" class="flex-auto mx-4 h-8 pl-4 rounded-full bg-gray-200 focus:outline-none focus:shadow-outline" placeholder="Add a post">
 
             <input v-else v-model="post.body" type="text" class="flex-auto mx-4 h-8 pl-4 rounded-full bg-gray-200 focus:outline-none focus:shadow-outline" placeholder="Add a post">
 
             <div v-if="! editMode">
                 <transition name="fade">
-                    <button v-if="postForm.body" @click="postMessage" class="px-2 text-xl">
+                    <button v-if="body" @click="postMessage" class="px-2 text-xl">
                         <i class="fas fa-share"></i>
                     </button>
                 </transition>
 
-                <button class="w-8 h-8 rounded-full text-xl bg-gray-200">
-                    <i class="fas fa-image"></i>
+                <button ref="postImage" class="dz-clickable w-8 h-8 rounded-full text-xl bg-gray-200 focus:outline-none">
+                    <p class="dz-clickable"><i class="fas fa-image"></i></p>
                 </button>
             </div>
 
@@ -31,12 +31,30 @@
                 </button>
             </div>
         </div>
+
+        <div class="dropzone-previews">
+            <div id="dz-template" class="hidden">
+                <div class="dz-preview dz-file-preview mt-4">
+                    <div class="dz-details">
+                        <img data-dz-thumbnail class="w-32 h-32" alt="">
+
+                        <button data-dz-remove class="mt-2 ml-6 text-sm focus:outline-none"> <i class="fas fa-minus-circle text-red-500"></i> Remove</button>
+                    </div>
+
+                    <div class="dz-progress">
+                        <span class="dz-upload" data-dz-upload></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </div>
 </template>
 
 <script>
     import _ from "lodash";
     import { mapGetters } from 'vuex';
+    import Dropzone from 'dropzone';
 
     export default {
         name: "CreatePost",
@@ -45,8 +63,13 @@
             return {
                 editMode: false,
                 post: '',
-                originalPost: ''
+                originalPost: '',
+                dropzone: null
             }
+        },
+
+        mounted() {
+            this.dropzone = new Dropzone(this.$refs.postImage, this.settings);
         },
 
         computed: {
@@ -54,15 +77,51 @@
                 authUser: 'authUser'
             }),
 
-            postForm: {
+            body: {
                 get() {
-                    return this.$store.getters.postForm;
+                    return this.$store.getters.body;
                 },
                 //_.debounce (function is to make sure the form is not updated after every character that user types.
-                set: _.debounce (function(postForm) {
-                    return this.$store.commit('updatePostForm', postForm);
+                set: _.debounce (function(body) {
+                    return this.$store.commit('setPostBody', body);
                 }, 1000)
-            }
+            },
+
+            settings() {
+                return {
+                    paramName: 'image', //field name is image
+                    url: '/api/posts',
+                    acceptedFiles: 'image/*',
+                    clickable: '.dz-clickable', //<i> will not work as it is not a button. To make sure all the inner elements of button are clickable.
+                    autoProcessQueue: false, //When the image is uploaded, it sends it right away which will give the error becasue we do not have the body in params.
+                    previewsContainer: '.dropzone-previews',
+                    previewTemplate: document.querySelector('#dz-template').innerHTML,
+                    maxFiles: 1,
+                    params: { //Cannot pass body here because settings() load when the component is mounted. Use sending.
+                        'width': 750,
+                        'height': 750,
+                    },
+                    headers: {
+                        'X-CSRF-TOKEN': document.head.querySelector('meta[name=csrf-token]').content,
+                    },
+                    sending: (file, xhr, postForm) => {
+                        postForm.append('body', this.$store.getters.body)
+                    },
+                    success: (e, res) => {
+                        this.dropzone.removeAllFiles()
+
+                        this.$store.commit('setPostBody', '')
+
+                        //this.$store.dispatch('fetchAllPosts') Works but takes more time to load all posts
+                        this.$store.commit('pushPost', res)
+                    },
+                    maxfilesexceeded: file => {
+                        this.dropzone.removeAllFiles()
+
+                        this.dropzone.addFile(file)
+                    }
+                };
+            },
         },
 
         created() {
@@ -75,7 +134,11 @@
 
         methods: {
             postMessage() {
-                this.$store.dispatch('createPost')
+                if (this.dropzone.getAcceptedFiles().length) {
+                    this.dropzone.processQueue()
+                } else {
+                    this.$store.dispatch('createPost')
+                }
             },
 
             updateMessage(post) {
