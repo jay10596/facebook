@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Http\Resources\Comment as CommentResource;
 use App\Http\Resources\CommentCollection;
+use App\Http\Resources\Post as PostResource;
 
 use App\Comment;
 use App\Post;
@@ -12,9 +13,9 @@ use App\Post;
 
 class CommentController extends Controller
 {
-    public function index()
+    public function index(Post $post)
     {
-        //
+        return new PostResource($post);
     }
 
     public function store(Post $post)
@@ -46,13 +47,17 @@ class CommentController extends Controller
         //
     }
 
-    public function update(Request $request, Comment $comment)
+    public function update(Request $request, Post $post, Comment $comment)
     {
-        //
+        $comment->update($request->all());
+
+        return (new CommentResource($comment))->response()->setStatusCode(201);
     }
 
-    public function destroy(Comment $comment)
+    public function destroy(Post $post, Comment $comment)
     {
-        //
+        $comment->delete();
+
+        return response('Deleted', 204);
     }
 }

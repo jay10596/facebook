@@ -4,6 +4,7 @@ import Auth from './modules/auth.js'
 import Title from './modules/title.js'
 import Request from './modules/request.js'
 import Posts from './modules/posts.js'
+import Comments from './modules/comments.js'
 
 Vue.use(Vuex);
 
@@ -12,6 +13,7 @@ export default new Vuex.Store({
         Auth,
         Title,
         Request,
-        Posts
+        Posts,
+        Comments
     }
 });

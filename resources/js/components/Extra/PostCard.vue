@@ -13,8 +13,8 @@
                     <button class="text-xl font-bold px-4 rounded items-center focus:outline-none">...</button>
 
                     <ul class="dropdown-menu pt-1 absolute hidden text-gray-700 text-sm">
-                        <li><button @click="commitEdit(post, $vnode.key)" class="w-24 py-2 px-4 block text-left rounded-t font-semibold bg-gray-400 hover:bg-gray-300 focus:outline-none">Edit</button></li>
-                        <li><button @click="dispatchDelete(post.id, $vnode.key)" class="w-24 py-2 px-4 block text-left rounded-b font-semibold bg-gray-400 hover:bg-gray-300 focus:outline-none">Delete</button></li>
+                        <li><button @click="commitEditPost(post, $vnode.key)" class="w-24 py-2 px-4 block text-left rounded-t font-semibold bg-gray-400 hover:bg-gray-300 focus:outline-none">Edit</button></li>
+                        <li><button @click="dispatchDeletePost(post.id, $vnode.key)" class="w-24 py-2 px-4 block text-left rounded-b font-semibold bg-gray-400 hover:bg-gray-300 focus:outline-none">Delete</button></li>
                     </ul>
                 </div>
             </div>
@@ -35,14 +35,14 @@
         </div>
 
         <div class="flex justify-between items-center m-4 border-1 border-gray-400">
-            <button @click="dispatchLike(post.id, $vnode.key)" :class="likeColor"><i class="far fa-thumbs-up mr-1"></i> Like</button>
+            <button @click="dispatchLikePost(post.id, $vnode.key)" :class="likeColor"><i class="far fa-thumbs-up mr-1"></i> Like</button>
             <button @click="commentMode = ! commentMode" class="w-full hover:text-gray-600 focus:outline-none"><i class="far fa-comments mr-1"></i> Comments</button>
         </div>
 
         <div v-if="commentMode" class="flex border-t border-gray-400 p-4 py-2">
             <input v-model='commentBody' type="text" name="comment" placeholder="Add your comment..." class="w-full pl-4 h-8 bg-gray-200 rounded-lg focus:outline-none">
 
-            <button v-if="commentBody" @click="dispatchComment(commentBody, post.id, $vnode.key), commentBody = ''"  class="bg-gray-200 ml-2 px-2 py-1 rounded-lg focus:outline-none">Post</button>
+            <button v-if="commentBody" @click="dispatchAddComment(commentBody, post.id, $vnode.key), commentBody = ''"  class="bg-gray-200 ml-2 px-2 py-1 rounded-lg focus:outline-none">Post</button>
         </div>
 
         <div v-if="commentMode" v-for="(comment, index) in post.comments.data" class="flex px-4 py-2 items-center">
@@ -57,7 +57,13 @@
                     <p class="inline">{{comment.body}}</p>
                 </div>
 
-                <p class="text-xs ml-4">{{comment.created_at}}</p>
+                <div class="flex text-xs">
+                    <button class="ml-4 font-medium text-blue-700 hover:font-semibold">Edit</button>
+
+                    <button @click="dispatchDeleteComment(comment.id, index, comment.post_id, $vnode.key)" class="ml-4 font-medium text-blue-700 hover:font-semibold">Delete</button>
+
+                    <p class="ml-4 text-xs">{{comment.created_at}}</p>
+                </div>
             </div>
         </div>
     </div>
@@ -83,23 +89,27 @@
         },
 
         methods: {
-            dispatchDelete(post_id, index) {
+            dispatchDeletePost(post_id, index) {
                 this.$store.dispatch('deletePost', {post_id, index})
             },
 
-            dispatchLike(post_id, index) {
+            dispatchLikePost(post_id, index) {
                 this.$store.dispatch('likeDislikePost', {post_id, index})
             },
 
-            dispatchComment(body, post_id, index) {
-                this.$store.dispatch('addComment', {body, post_id, index})
-            },
-
-            commitEdit(post, index) {
+            commitEditPost(post, index) {
                 this.$store.commit('splicePost', {post, index})
 
                 EventBus.$emit('changingEditMode', post)
-            }
+            },
+
+            dispatchAddComment(body, post_id, index) {
+                this.$store.dispatch('addComment', {body, post_id, index})
+            },
+
+            dispatchDeleteComment(comment_id, comment_index, post_id, post_index) {
+                this.$store.dispatch('deleteComment', {comment_id, comment_index, post_id, post_index})
+            },
         }
     }
 </script>

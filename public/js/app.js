@@ -6683,6 +6683,12 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
 /* harmony default export */ __webpack_exports__["default"] = ({
   name: "PostCard",
   props: ['post'],
@@ -6698,31 +6704,39 @@ __webpack_require__.r(__webpack_exports__);
     }
   },
   methods: {
-    dispatchDelete: function dispatchDelete(post_id, index) {
+    dispatchDeletePost: function dispatchDeletePost(post_id, index) {
       this.$store.dispatch('deletePost', {
         post_id: post_id,
         index: index
       });
     },
-    dispatchLike: function dispatchLike(post_id, index) {
+    dispatchLikePost: function dispatchLikePost(post_id, index) {
       this.$store.dispatch('likeDislikePost', {
         post_id: post_id,
         index: index
       });
     },
-    dispatchComment: function dispatchComment(body, post_id, index) {
+    commitEditPost: function commitEditPost(post, index) {
+      this.$store.commit('splicePost', {
+        post: post,
+        index: index
+      });
+      EventBus.$emit('changingEditMode', post);
+    },
+    dispatchAddComment: function dispatchAddComment(body, post_id, index) {
       this.$store.dispatch('addComment', {
         body: body,
         post_id: post_id,
         index: index
       });
     },
-    commitEdit: function commitEdit(post, index) {
-      this.$store.commit('splicePost', {
-        post: post,
-        index: index
+    dispatchDeleteComment: function dispatchDeleteComment(comment_id, comment_index, post_id, post_index) {
+      this.$store.dispatch('deleteComment', {
+        comment_id: comment_id,
+        comment_index: comment_index,
+        post_id: post_id,
+        post_index: post_index
       });
-      EventBus.$emit('changingEditMode', post);
     }
   }
 });
@@ -29522,7 +29536,7 @@ var render = function() {
                         "w-24 py-2 px-4 block text-left rounded-t font-semibold bg-gray-400 hover:bg-gray-300 focus:outline-none",
                       on: {
                         click: function($event) {
-                          return _vm.commitEdit(_vm.post, _vm.$vnode.key)
+                          return _vm.commitEditPost(_vm.post, _vm.$vnode.key)
                         }
                       }
                     },
@@ -29538,7 +29552,10 @@ var render = function() {
                         "w-24 py-2 px-4 block text-left rounded-b font-semibold bg-gray-400 hover:bg-gray-300 focus:outline-none",
                       on: {
                         click: function($event) {
-                          return _vm.dispatchDelete(_vm.post.id, _vm.$vnode.key)
+                          return _vm.dispatchDeletePost(
+                            _vm.post.id,
+                            _vm.$vnode.key
+                          )
                         }
                       }
                     },
@@ -29583,7 +29600,7 @@ var render = function() {
               class: _vm.likeColor,
               on: {
                 click: function($event) {
-                  return _vm.dispatchLike(_vm.post.id, _vm.$vnode.key)
+                  return _vm.dispatchLikePost(_vm.post.id, _vm.$vnode.key)
                 }
               }
             },
@@ -29645,7 +29662,7 @@ var render = function() {
                       "bg-gray-200 ml-2 px-2 py-1 rounded-lg focus:outline-none",
                     on: {
                       click: function($event) {
-                        _vm.dispatchComment(
+                        _vm.dispatchAddComment(
                           _vm.commentBody,
                           _vm.post.id,
                           _vm.$vnode.key
@@ -29701,8 +29718,38 @@ var render = function() {
                   1
                 ),
                 _vm._v(" "),
-                _c("p", { staticClass: "text-xs ml-4" }, [
-                  _vm._v(_vm._s(comment.created_at))
+                _c("div", { staticClass: "flex text-xs" }, [
+                  _c(
+                    "button",
+                    {
+                      staticClass:
+                        "ml-4 font-medium text-blue-700 hover:font-semibold"
+                    },
+                    [_vm._v("Edit")]
+                  ),
+                  _vm._v(" "),
+                  _c(
+                    "button",
+                    {
+                      staticClass:
+                        "ml-4 font-medium text-blue-700 hover:font-semibold",
+                      on: {
+                        click: function($event) {
+                          return _vm.dispatchDeleteComment(
+                            comment.id,
+                            index,
+                            comment.post_id,
+                            _vm.$vnode.key
+                          )
+                        }
+                      }
+                    },
+                    [_vm._v("Delete")]
+                  ),
+                  _vm._v(" "),
+                  _c("p", { staticClass: "ml-4 text-xs" }, [
+                    _vm._v(_vm._s(comment.created_at))
+                  ])
                 ])
               ])
             ])
@@ -47331,6 +47378,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _modules_title_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./modules/title.js */ "./resources/js/store/modules/title.js");
 /* harmony import */ var _modules_request_js__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./modules/request.js */ "./resources/js/store/modules/request.js");
 /* harmony import */ var _modules_posts_js__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./modules/posts.js */ "./resources/js/store/modules/posts.js");
+/* harmony import */ var _modules_comments_js__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./modules/comments.js */ "./resources/js/store/modules/comments.js");
+
 
 
 
@@ -47343,7 +47392,8 @@ vue__WEBPACK_IMPORTED_MODULE_0___default.a.use(vuex__WEBPACK_IMPORTED_MODULE_1__
     Auth: _modules_auth_js__WEBPACK_IMPORTED_MODULE_2__["default"],
     Title: _modules_title_js__WEBPACK_IMPORTED_MODULE_3__["default"],
     Request: _modules_request_js__WEBPACK_IMPORTED_MODULE_4__["default"],
-    Posts: _modules_posts_js__WEBPACK_IMPORTED_MODULE_5__["default"]
+    Posts: _modules_posts_js__WEBPACK_IMPORTED_MODULE_5__["default"],
+    Comments: _modules_comments_js__WEBPACK_IMPORTED_MODULE_6__["default"]
   }
 }));
 
@@ -47381,6 +47431,71 @@ var actions = {
 var mutations = {
   setAuthUser: function setAuthUser(state, user) {
     state.authUser = user;
+  }
+};
+/* harmony default export */ __webpack_exports__["default"] = ({
+  state: state,
+  getters: getters,
+  actions: actions,
+  mutations: mutations
+});
+
+/***/ }),
+
+/***/ "./resources/js/store/modules/comments.js":
+/*!************************************************!*\
+  !*** ./resources/js/store/modules/comments.js ***!
+  \************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _posts__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./posts */ "./resources/js/store/modules/posts.js");
+
+var state = {
+  //Unlike posts, we will pass the body from the vue file as a parameter (Just to do it differently)
+  commentErrors: null
+};
+var getters = {
+  commentErrors: function commentErrors(state) {
+    return state.commentErrors;
+  }
+};
+var actions = {
+  addComment: function addComment(_ref, data) {
+    var commit = _ref.commit,
+        state = _ref.state;
+    axios.post('/api/posts/' + data.post_id + '/comments', {
+      body: data.body
+    }).then(function (res) {
+      commit('pushComments', {
+        comments: res.data,
+        index: data.index
+      });
+    })["catch"](function (err) {
+      return commit('setCommentErrors', err);
+    });
+  },
+  deleteComment: function deleteComment(_ref2, data) {
+    var commit = _ref2.commit,
+        state = _ref2.state;
+    axios["delete"]('/api/posts/' + data.post_id + '/comments/' + data.comment_id).then(function (res) {
+      commit('spliceComment', data);
+    })["catch"](function (err) {
+      return commit('setCommentErrors', err);
+    });
+  }
+};
+var mutations = {
+  setCommentErrors: function setCommentErrors(state, err) {
+    state.commentErrors = err.response;
+  },
+  pushComments: function pushComments(state, data) {
+    _posts__WEBPACK_IMPORTED_MODULE_0__["default"].state.posts[data.index].comments = data.comments;
+  },
+  spliceComment: function spliceComment(state, data) {
+    _posts__WEBPACK_IMPORTED_MODULE_0__["default"].state.posts[data.post_index].comments.data.splice(data.comment_index, 1);
   }
 };
 /* harmony default export */ __webpack_exports__["default"] = ({
@@ -47487,20 +47602,6 @@ var actions = {
     })["catch"](function (err) {
       return commit('setPostErrors', err);
     });
-  },
-  addComment: function addComment(_ref7, data) {
-    var commit = _ref7.commit,
-        state = _ref7.state;
-    axios.post('/api/posts/' + data.post_id + '/comments', {
-      body: data.body
-    }).then(function (res) {
-      commit('pushComments', {
-        comments: res.data,
-        index: data.index
-      });
-    })["catch"](function (err) {
-      return commit('setPostErrors', err);
-    });
   }
 };
 var mutations = {
@@ -47527,9 +47628,6 @@ var mutations = {
   },
   pushLikes: function pushLikes(state, data) {
     state.posts[data.index].likes = data.likes;
-  },
-  pushComments: function pushComments(state, data) {
-    state.posts[data.index].comments = data.comments;
   }
 };
 /* harmony default export */ __webpack_exports__["default"] = ({

@@ -77,14 +77,6 @@ const actions = {
             })
             .catch(err => commit('setPostErrors', err))
     },
-
-    addComment({commit, state}, data) {
-        axios.post('/api/posts/' + data.post_id + '/comments', {body: data.body})
-            .then(res => {
-                commit('pushComments', {comments: res.data, index: data.index})
-            })
-            .catch(err => commit('setPostErrors', err))
-    },
 };
 
 const mutations = {
@@ -118,10 +110,6 @@ const mutations = {
 
     pushLikes(state, data) {
         state.posts[data.index].likes = data.likes
-    },
-
-    pushComments(state, data) {
-        state.posts[data.index].comments = data.comments
     },
 };
 
