@@ -51,7 +51,7 @@ class CommentController extends Controller
     {
         $comment->update($request->all());
 
-        return (new CommentResource($comment))->response()->setStatusCode(201);
+        return new CommentCollection($post->comments);
     }
 
     public function destroy(Post $post, Comment $comment)

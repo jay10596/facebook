@@ -45,33 +45,19 @@
             <button v-if="commentBody" @click="dispatchAddComment(commentBody, post.id, $vnode.key), commentBody = ''"  class="bg-gray-200 ml-2 px-2 py-1 rounded-lg focus:outline-none">Post</button>
         </div>
 
-        <div v-if="commentMode" v-for="(comment, index) in post.comments.data" class="flex px-4 py-2 items-center">
-            <img class="w-8 h-8 object-cover rounded-full" :src="'/storage/' + comment.commented_by.profile_image.path" alt="Profile Image">
-
-            <div>
-                <div class="flex-auto ml-2 bg-gray-200 rounded-lg p-2 text-sm">
-                    <router-link :to="'/users/' + comment.commented_by.id" class="font-bold text-blue-700">
-                        {{comment.commented_by.name}}
-                    </router-link>
-
-                    <p class="inline">{{comment.body}}</p>
-                </div>
-
-                <div class="flex text-xs">
-                    <button class="ml-4 font-medium text-blue-700 hover:font-semibold">Edit</button>
-
-                    <button @click="dispatchDeleteComment(comment.id, index, comment.post_id, $vnode.key)" class="ml-4 font-medium text-blue-700 hover:font-semibold">Delete</button>
-
-                    <p class="ml-4 text-xs">{{comment.created_at}}</p>
-                </div>
-            </div>
+        <div v-if="commentMode" v-for="(comment, index) in post.comments.data">
+            <CommentCard :comment="comment" :comment_index="index" :post_index="$vnode.key" />
         </div>
     </div>
 </template>
 
 <script>
+    import CommentCard from "./CommentCard";
+
     export default {
         name: "PostCard",
+
+        components: {CommentCard},
 
         props: ['post'],
 
@@ -104,11 +90,7 @@
             },
 
             dispatchAddComment(body, post_id, index) {
-                this.$store.dispatch('addComment', {body, post_id, index})
-            },
-
-            dispatchDeleteComment(comment_id, comment_index, post_id, post_index) {
-                this.$store.dispatch('deleteComment', {comment_id, comment_index, post_id, post_index})
+                this.$store.dispatch('createComment', {body, post_id, index})
             },
         }
     }

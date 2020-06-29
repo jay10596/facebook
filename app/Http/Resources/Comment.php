@@ -13,7 +13,7 @@ class Comment extends JsonResource
             'id' => $this->id,
             'body' => $this->body,
             'post_id' => $this->post_id,
-            'created_at' => $this->created_at->diffForHumans(),
+            'updated_at' => $this->updated_at->diffForHumans(),
 
             'commented_by' => new UserResource($this->user),
 

@@ -12,12 +12,20 @@ const getters = {
 };
 
 const actions = {
-    addComment({commit, state}, data) {
+    createComment({commit, state}, data) {
         axios.post('/api/posts/' + data.post_id + '/comments', {body: data.body})
             .then(res => {
                 commit('pushComments', {comments: res.data, index: data.index})
             })
             .catch(err => commit('setCommentErrors', err))
+    },
+
+    updateComment({commit, state}, data) {
+        axios.put('/api/posts/' + data.post_id + '/comments/' + data.comment_id, {body: data.comment_body})
+            .then(res => {
+                commit('pushComments', res.data)
+            })
+            .catch(err => commit('setPostErrors', err))
     },
 
     deleteComment({commit, state}, data) {
