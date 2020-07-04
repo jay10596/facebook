@@ -33,7 +33,7 @@
             </router-link>
         </div>
     </div>
-</template>
+</template/>
 
 <script>
     import { mapGetters } from 'vuex';

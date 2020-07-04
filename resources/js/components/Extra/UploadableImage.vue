@@ -42,7 +42,9 @@
                         'type' : this.imageType
                     },
                     headers: {
-                        'X-CSRF-TOKEN': document.head.querySelector('meta[name=csrf-token]').content,
+                        //'X-CSRF-TOKEN': document.head.querySelector('meta[name=csrf-token]').content,
+
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
                     },
                     success: (e, res) => {
                         //alert('uploaded!');

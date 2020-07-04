@@ -17,7 +17,7 @@ class Comment extends JsonResource
 
             'commented_by' => new UserResource($this->user),
 
-            'path' => url('/posts/' . $this->post_id . '/comments/' . $this->id),
+            'path' => '/posts/' . $this->post_id . '/comments/' . $this->id,
         ];
     }
 }

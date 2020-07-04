@@ -36,6 +36,7 @@
 
         <div class="flex justify-between items-center m-4 border-1 border-gray-400">
             <button @click="dispatchLikePost(post.id, $vnode.key)" :class="likeColor"><i class="far fa-thumbs-up mr-1"></i> Like</button>
+
             <button @click="commentMode = ! commentMode" class="w-full hover:text-gray-600 focus:outline-none"><i class="far fa-comments mr-1"></i> Comments</button>
         </div>
 

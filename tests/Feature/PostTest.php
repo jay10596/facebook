@@ -192,7 +192,9 @@ class PostTest extends TestCase
     {
         $this->actingAs($user = factory(User::class)->create(), 'api');
 
-        $posts = factory(Post::class, 2)->create(); //These posts do not belong to logged in user
+        $user2 = factory(User::class)->create();
+
+        $posts = factory(Post::class, 2)->create(['user_id' => $user2->id]); //These posts do not belong to logged in user
 
         $response = $this->get('/api/posts');
 

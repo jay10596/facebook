@@ -8,7 +8,8 @@ class HomeController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('auth');
+        //Use middleware('auth') for default laravel authentication.
+        $this->middleware('api');
     }
 
     public function index()

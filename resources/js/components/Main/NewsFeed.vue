@@ -7,8 +7,8 @@
 </template>
 
 <script>
-    import CreatePost from "./Post/CreatePost";
-    import ShowPosts from "./Post/ShowPosts";
+    import CreatePost from "../Post/CreatePost";
+    import ShowPosts from "../Post/ShowPosts";
 
     export default {
         name: "NewsFeed",

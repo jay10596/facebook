@@ -5,7 +5,7 @@
 </template>
 
 <script>
-    import ShowUser from "./User/ShowUser";
+    import ShowUser from "../User/ShowUser";
 
     export default {
         name: "Profile",

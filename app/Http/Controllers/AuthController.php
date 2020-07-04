@@ -6,7 +6,9 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Resources\User as UserResource;
+use Lcobucci\JWT\Parser;
 
+use Carbon\Carbon;
 use Validator;
 use App\User;
 
@@ -20,56 +22,59 @@ class AuthController extends Controller
 
     public $successStatus = 200;
 
-    public function login(){
-        if(Auth::attempt(['email' => request('email'), 'password' => request('password')])){
-            $user = Auth::user();
+    public function login()
+    {
+        $data = request()->validate([
+            'email' => 'required',
+            'password' => 'required'
+        ]);
 
-            $success['token'] =  $user->createToken('MyApp')->accessToken;
+        if(Auth::attempt($data)) {
+            return $this->responseAfterLogin();
+        }
 
-            return response()->json(['success' => $success], $this->successStatus);
-        }
-        else {
-            return response()->json(['error'=>'Unauthorised'], 401);
-        }
+        //Inner objects are created based on manual app->Exceptions->ValidationErrorException structure for best practice.
+        return response()->json(['errors' => ['meta' => ['unauthorised' => 'Incorrect Email or Password!']]], 401);
     }
 
     public function register(Request $request)
     {
-        $validator = Validator::make($request->all(), [
+        $data = request()->validate([
             'name' => 'required',
             'email' => 'required|email',
             'password' => 'required',
             'confirm_password' => 'required|same:password',
         ]);
 
-        if ($validator->fails()) {
-            return response()->json(['error'=>$validator->errors()], 401);
-        }
-
-        $data = $request->all();
         $data['password'] = bcrypt($data['password']);
 
-        $user = User::create($data);
+        User::create($data);
 
-        $success['token'] =  $user->createToken('MyApp')->accessToken;
-        $success['name'] =  $user->name;
+        return $this->login();
+    }
 
-        return response()->json(['success'=>$success], $this->successStatus);
+    public function responseAfterLogin() {
+        $user = auth()->user();
+
+        $token =  $user->createToken('MyApp')->accessToken;
+
+        return response()->json([
+            'access_token' => $token,
+            'name' => auth()->user()->name
+        ]);
     }
 
     public function me()
     {
-        $user = Auth::user();
+        $user = auth()->user();
 
-        return response()->json(['success'=>new UserResource($user)], $this->successStatus);
+        return response()->json(new UserResource($user), $this->successStatus);
     }
 
-    public function logout()
+    public function logout(Request $request)
     {
-        $user = Auth::user();
+        $user = auth()->user()->token()->revoke();
 
-        $user->token()->revoke();
-
-        return response()->json(['success'=>'Successfully logged out'], $this->successStatus);
+        return response()->json('Successfully logged out', $this->successStatus);
     }
 }

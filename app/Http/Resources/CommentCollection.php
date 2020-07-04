@@ -12,7 +12,7 @@ class CommentCollection extends ResourceCollection
             'data' => $this->collection,
             'comment_count' => $this->count(),
             'links' => [
-                'self' => url('/posts'),
+                'self' => '/posts',
             ],
         ];
     }

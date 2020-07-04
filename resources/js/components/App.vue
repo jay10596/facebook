@@ -1,40 +1,38 @@
 <template>
-    <div v-if="authUser" class="flex flex-col h-screen overflow-y-hidden">
-        <Navbar />
+    <div>
+        <div v-if="! loggedIn">
+            <div v-if="! registerMode"> <Login /> </div>
 
-        <div class="flex flex-1 overflow-y-hidden">
-            <Sidebar />
-
-            <div class="w-2/3 overflow-x-hidden">
-                <router-view />
-            </div>
+            <div v-else> <Register /> </div>
         </div>
+
+        <div v-else> <Home /> </div>
     </div>
 </template>
 
 <script>
-    import Navbar from "./Navbar";
-    import Sidebar from "./Sidebar";
-    import NewsFeed from "./NewsFeed";
-    import { mapGetters } from "vuex";
+    import Login from "./Auth/Login";
+    import Register from "./Auth/Register";
+    import Home from "./Main/Home";
 
     export default {
         name: "App",
 
-        components: {NewsFeed, Sidebar, Navbar},
+        components: {Login, Register, Home},
 
-        computed: {
-            ...mapGetters({
-                authUser: 'authUser'
-            }),
-        },
-
-        mounted() {
-            this.$store.dispatch('fetchAuthUser');
+        data() {
+            return {
+                loggedIn: User.loggedIn(),
+                registerMode: false
+            }
         },
 
         created() {
             this.$store.dispatch('getPageTitle', this.$route.meta.title)
+
+            EventBus.$on('changingRegisterMode', () => {
+                this.registerMode = ! this.registerMode
+            })
         },
 
         watch: {

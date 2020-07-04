@@ -13,23 +13,34 @@
                         <i class="fas fa-share"></i>
                     </button>
                 </transition>
-
-                <button ref="postImage" class="dz-clickable w-8 h-8 rounded-full text-xl bg-gray-200 focus:outline-none">
-                    <p class="dz-clickable"><i class="fas fa-image"></i></p>
-                </button>
             </div>
 
             <div v-else>
                 <transition name="fade">
-                    <button v-if="post.body" @click="updateMessage(post), post.body='', editMode = false" class="px-2 text-xl">
+                    <button v-if="post.body" @click="updateMessage(post), post.body=''" class="px-2 text-xl">
                         <i class="fas fa-edit"></i>
                     </button>
                 </transition>
 
-                <button @click="commitCancelEdit(post), editMode = false" class="w-8 h-8 rounded-full text-xl bg-gray-200">
+                <button @click="commitCancelEdit(post)" class="w-8 h-8 rounded-full text-xl bg-gray-200">
                     <i class="far fa-window-close"></i>
                 </button>
             </div>
+
+            <button ref="postImage" :class="imageButtonClass">
+                <p class="dz-clickable"><i class="fas fa-image"></i></p>
+            </button>
+
+            <button v-if="editMode" class="mx-2 w-8 h-8 rounded-full text-xl bg-gray-200 focus:outline-none">
+                <label class="">
+                    <input type="file" name='image' @change="getImage" style="display:none;">
+                    <i class="fas fa-image"></i>
+                </label>
+            </button>
+        </div>
+
+        <div v-if="editMode">
+            <img :src="'/storage/' + post.image" class="my-4" alt="">
         </div>
 
         <div class="dropzone-previews">
@@ -47,7 +58,6 @@
                 </div>
             </div>
         </div>
-
     </div>
 </template>
 
@@ -64,18 +74,27 @@
                 editMode: false,
                 post: '',
                 originalPost: '',
-                dropzone: null
+                dropzone: null,
             }
         },
 
         mounted() {
             this.dropzone = new Dropzone(this.$refs.postImage, this.settings);
+            console.log(this.dropzone)
         },
 
         computed: {
             ...mapGetters({
                 authUser: 'authUser'
             }),
+
+            imageButtonClass() {
+                 if(this.editMode) {
+                     return 'hidden'
+                 } else {
+                     return 'dz-clickable mx-2 w-8 h-8 rounded-full text-xl bg-gray-200 focus:outline-none'
+                 }
+            },
 
             body: {
                 get() {
@@ -102,12 +121,15 @@
                         'height': 750,
                     },
                     headers: {
-                        'X-CSRF-TOKEN': document.head.querySelector('meta[name=csrf-token]').content,
+                        //'X-CSRF-TOKEN': document.head.querySelector('meta[name=csrf-token]').content, (For api, when token is not needed)
+
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
                     },
                     sending: (file, xhr, postForm) => {
                         postForm.append('body', this.$store.getters.body)
                     },
                     success: (e, res) => {
+
                         this.dropzone.removeAllFiles()
 
                         this.$store.commit('setPostBody', '')
@@ -120,7 +142,7 @@
 
                         this.dropzone.addFile(file)
                     }
-                };
+                }
             },
         },
 
@@ -142,13 +164,21 @@
             },
 
             updateMessage(post) {
+                this.editMode = false
+
                 this.$store.dispatch('updatePost', post)
             },
 
             commitCancelEdit(post) {
+                this.editMode = false
+
                 post.body = this.originalBody
 
                 this.$store.commit('cancelEdit', post)
+            },
+
+            getImage(e) {
+                //Can't solve it
             }
         }
     }
