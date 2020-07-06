@@ -1,6 +1,6 @@
 <template>
-    <div class="w-2/3 bg-white rounded mt-6 shadow">
-        <div class="flex flex-col p-4 ">
+    <div class="w-2/3 p-4 bg-white rounded mt-6 shadow ">
+        <div >
             <div class="flex justify-between items-center">
                 <img class="w-8 h-8 object-cover rounded-full" :src="'/storage/' + post.posted_by.profile_image.path" alt="Profile Image">
 
@@ -24,8 +24,8 @@
             </div>
         </div>
 
-        <div v-if="post.image">
-            <img :src="'/storage/' + post.image" alt="">
+        <div v-if="post.single_picture">
+            <img :src="'/storage/' + post.single_picture.path" class="w-full h-full mt-2" alt="Post Picture">
         </div>
 
         <div class="flex justify-between p-4 text-sm">

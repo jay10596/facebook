@@ -54,7 +54,7 @@ const actions = {
     },
 
     updatePost({commit, state}, post) {
-        axios.put('/api/posts/' + post.id, {body: post.body, image: post.image})
+        axios.put('/api/posts/' + post.id, {body: post.body})
             .then(res => {
                 commit('pushPost', res.data)
                 commit('setPostBody', '')

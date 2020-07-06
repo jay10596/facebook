@@ -3,7 +3,7 @@ const state = {
 };
 
 const getters = {
-    pageTitle: state => {
+    title: state => {
         return state.title;
     }
 };

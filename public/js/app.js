@@ -7150,9 +7150,25 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 
 /* harmony default export */ __webpack_exports__["default"] = ({
   name: "Navbar",
-  computed: _objectSpread({}, Object(vuex__WEBPACK_IMPORTED_MODULE_0__["mapGetters"])({
-    authUser: 'authUser'
-  }))
+  computed: _objectSpread(_objectSpread({}, Object(vuex__WEBPACK_IMPORTED_MODULE_0__["mapGetters"])({
+    authUser: 'authUser',
+    title: 'title'
+  })), {}, {
+    homeButtonClass: function homeButtonClass() {
+      if (this.title == 'NewsFeed | Facebook') {
+        return 'flex items-center h-full px-6 text-2xl border-b-2 border-blue-500 text-blue-500';
+      }
+
+      return 'flex items-center h-full px-6 text-2xl border-b-2 border-white hover:border-blue-500 hover:text-blue-500';
+    },
+    profileButtonClass: function profileButtonClass() {
+      if (this.title == 'Profile | Facebook') {
+        return 'flex items-center h-full px-6 text-2xl border-b-2 border-blue-500';
+      }
+
+      return 'flex items-center h-full px-6 text-2xl border-b-2 border-white hover:border-blue-500';
+    }
+  })
 });
 
 /***/ }),
@@ -7290,13 +7306,6 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 //
 //
 //
-//
-//
-//
-//
-//
-//
-//
 
 
 
@@ -7312,7 +7321,6 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
   },
   mounted: function mounted() {
     this.dropzone = new dropzone__WEBPACK_IMPORTED_MODULE_2___default.a(this.$refs.postImage, this.settings);
-    console.log(this.dropzone);
   },
   computed: _objectSpread(_objectSpread({}, Object(vuex__WEBPACK_IMPORTED_MODULE_1__["mapGetters"])({
     authUser: 'authUser'
@@ -7339,7 +7347,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
       return {
         paramName: 'image',
         //field name is image
-        url: '/api/posts',
+        url: '/api/upload-pictures',
         acceptedFiles: 'image/*',
         clickable: '.dz-clickable',
         //<i> will not work as it is not a button. To make sure all the inner elements of button are clickable.
@@ -7358,7 +7366,8 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
           'Authorization': "Bearer ".concat(localStorage.getItem('token'))
         },
         sending: function sending(file, xhr, postForm) {
-          postForm.append('body', _this.$store.getters.body);
+          postForm.append('body', _this.post.body || _this.$store.getters.body);
+          postForm.append('post_id', _this.post.id);
         },
         success: function success(e, res) {
           _this.dropzone.removeAllFiles();
@@ -7395,7 +7404,12 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
     },
     updateMessage: function updateMessage(post) {
       this.editMode = false;
-      this.$store.dispatch('updatePost', post);
+
+      if (this.dropzone.getAcceptedFiles().length) {
+        this.dropzone.processQueue();
+      } else {
+        this.$store.dispatch('updatePost', post);
+      }
     },
     commitCancelEdit: function commitCancelEdit(post) {
       this.editMode = false;
@@ -30318,9 +30332,9 @@ var render = function() {
   var _c = _vm._self._c || _h
   return _c(
     "div",
-    { staticClass: "w-2/3 bg-white rounded mt-6 shadow" },
+    { staticClass: "w-2/3 p-4 bg-white rounded mt-6 shadow " },
     [
-      _c("div", { staticClass: "flex flex-col p-4 " }, [
+      _c("div", [
         _c("div", { staticClass: "flex justify-between items-center" }, [
           _c("img", {
             staticClass: "w-8 h-8 object-cover rounded-full",
@@ -30401,9 +30415,15 @@ var render = function() {
         ])
       ]),
       _vm._v(" "),
-      _vm.post.image
+      _vm.post.single_picture
         ? _c("div", [
-            _c("img", { attrs: { src: "/storage/" + _vm.post.image, alt: "" } })
+            _c("img", {
+              staticClass: "w-full h-full mt-2",
+              attrs: {
+                src: "/storage/" + _vm.post.single_picture.path,
+                alt: "Post Picture"
+              }
+            })
           ])
         : _vm._e(),
       _vm._v(" "),
@@ -30659,19 +30679,14 @@ var render = function() {
         [
           _c(
             "router-link",
-            {
-              staticClass:
-                "flex items-center h-full px-6 text-2xl border-b-2 border-white hover:border-blue-500 hover:text-blue-500",
-              attrs: { to: "/" }
-            },
+            { class: _vm.homeButtonClass, attrs: { to: "/" } },
             [_c("i", { staticClass: "fas fa-home" })]
           ),
           _vm._v(" "),
           _c(
             "router-link",
             {
-              staticClass:
-                "flex items-center h-full px-6 border-b-2 border-white hover:border-blue-500",
+              class: _vm.profileButtonClass,
               attrs: { to: "/users/" + _vm.authUser.id }
             },
             [
@@ -30927,37 +30942,22 @@ var render = function() {
             1
           ),
       _vm._v(" "),
-      _c("button", { ref: "postImage", class: _vm.imageButtonClass }, [
-        _vm._m(0)
-      ]),
-      _vm._v(" "),
-      _vm.editMode
-        ? _c(
-            "button",
-            {
-              staticClass:
-                "mx-2 w-8 h-8 rounded-full text-xl bg-gray-200 focus:outline-none"
-            },
-            [
-              _c("label", {}, [
-                _c("input", {
-                  staticStyle: { display: "none" },
-                  attrs: { type: "file", name: "image" },
-                  on: { change: _vm.getImage }
-                }),
-                _vm._v(" "),
-                _c("i", { staticClass: "fas fa-image" })
-              ])
-            ]
-          )
-        : _vm._e()
+      _c(
+        "button",
+        {
+          ref: "postImage",
+          staticClass:
+            "dz-clickable mx-2 w-8 h-8 rounded-full text-xl bg-gray-200 focus:outline-none"
+        },
+        [_vm._m(0)]
+      )
     ]),
     _vm._v(" "),
-    _vm.editMode
+    _vm.editMode && _vm.post.single_picture
       ? _c("div", [
           _c("img", {
-            staticClass: "my-4",
-            attrs: { src: "/storage/" + _vm.post.image, alt: "" }
+            staticClass: "w-full h-full my-4",
+            attrs: { src: "/storage/" + _vm.post.single_picture.path, alt: "" }
           })
         ])
       : _vm._e(),
@@ -48956,8 +48956,7 @@ var actions = {
     var commit = _ref4.commit,
         state = _ref4.state;
     axios.put('/api/posts/' + post.id, {
-      body: post.body,
-      image: post.image
+      body: post.body
     }).then(function (res) {
       commit('pushPost', res.data);
       commit('setPostBody', '');
@@ -49145,7 +49144,7 @@ var state = {
   title: 'Welcome'
 };
 var getters = {
-  pageTitle: function pageTitle(state) {
+  title: function title(state) {
     return state.title;
   }
 };

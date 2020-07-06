@@ -14,11 +14,11 @@
         </div>
 
         <div class="w-full flex justify-center items-center h-full">
-            <router-link to="/" class="flex items-center h-full px-6 text-2xl border-b-2 border-white hover:border-blue-500 hover:text-blue-500">
+            <router-link to="/" :class="homeButtonClass">
                 <i class="fas fa-home"></i>
             </router-link>
 
-            <router-link :to="'/users/' + authUser.id" class="flex items-center h-full px-6 border-b-2 border-white hover:border-blue-500">
+            <router-link :to="'/users/' + authUser.id" :class="profileButtonClass">
                 <img class="w-8 h-8 object-cover rounded-full" :src="'/storage/' + authUser.profile_image.path" alt="Profile Image">
             </router-link>
 
@@ -33,7 +33,7 @@
             </router-link>
         </div>
     </div>
-</template/>
+</template>
 
 <script>
     import { mapGetters } from 'vuex';
@@ -43,8 +43,23 @@
 
         computed: {
             ...mapGetters({
-                authUser: 'authUser'
-            })
+                authUser: 'authUser',
+                title: 'title'
+            }),
+
+            homeButtonClass() {
+                if(this.title == 'NewsFeed | Facebook') {
+                    return 'flex items-center h-full px-6 text-2xl border-b-2 border-blue-500 text-blue-500'
+                }
+                return 'flex items-center h-full px-6 text-2xl border-b-2 border-white hover:border-blue-500 hover:text-blue-500'
+            },
+
+            profileButtonClass() {
+                if(this.title == 'Profile | Facebook') {
+                    return 'flex items-center h-full px-6 text-2xl border-b-2 border-blue-500'
+                }
+                return 'flex items-center h-full px-6 text-2xl border-b-2 border-white hover:border-blue-500'
+            }
         }
     }
 </script>

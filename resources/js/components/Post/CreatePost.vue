@@ -27,20 +27,13 @@
                 </button>
             </div>
 
-            <button ref="postImage" :class="imageButtonClass">
+            <button ref="postImage" class="dz-clickable mx-2 w-8 h-8 rounded-full text-xl bg-gray-200 focus:outline-none">
                 <p class="dz-clickable"><i class="fas fa-image"></i></p>
-            </button>
-
-            <button v-if="editMode" class="mx-2 w-8 h-8 rounded-full text-xl bg-gray-200 focus:outline-none">
-                <label class="">
-                    <input type="file" name='image' @change="getImage" style="display:none;">
-                    <i class="fas fa-image"></i>
-                </label>
             </button>
         </div>
 
-        <div v-if="editMode">
-            <img :src="'/storage/' + post.image" class="my-4" alt="">
+        <div v-if="editMode && post.single_picture">
+            <img :src="'/storage/' + post.single_picture.path" class="w-full h-full my-4" alt="">
         </div>
 
         <div class="dropzone-previews">
@@ -80,7 +73,6 @@
 
         mounted() {
             this.dropzone = new Dropzone(this.$refs.postImage, this.settings);
-            console.log(this.dropzone)
         },
 
         computed: {
@@ -109,7 +101,7 @@
             settings() {
                 return {
                     paramName: 'image', //field name is image
-                    url: '/api/posts',
+                    url: '/api/upload-pictures',
                     acceptedFiles: 'image/*',
                     clickable: '.dz-clickable', //<i> will not work as it is not a button. To make sure all the inner elements of button are clickable.
                     autoProcessQueue: false, //When the image is uploaded, it sends it right away which will give the error becasue we do not have the body in params.
@@ -126,10 +118,10 @@
                         'Authorization': `Bearer ${localStorage.getItem('token')}`
                     },
                     sending: (file, xhr, postForm) => {
-                        postForm.append('body', this.$store.getters.body)
+                        postForm.append('body', this.post.body || this.$store.getters.body)
+                        postForm.append('post_id', this.post.id)
                     },
                     success: (e, res) => {
-
                         this.dropzone.removeAllFiles()
 
                         this.$store.commit('setPostBody', '')
@@ -166,7 +158,11 @@
             updateMessage(post) {
                 this.editMode = false
 
-                this.$store.dispatch('updatePost', post)
+                if (this.dropzone.getAcceptedFiles().length) {
+                    this.dropzone.processQueue()
+                } else {
+                    this.$store.dispatch('updatePost', post)
+                }
             },
 
             commitCancelEdit(post) {

@@ -56,26 +56,9 @@ class PostController extends Controller
 
         $data = request()->validate([
             'body' => '',
-            'image' => '',
-            'width' => '',
-            'height' => ''
         ]);
 
-        if (isset($data['image'])) {
-            //Store image in the storage
-            $image = $data['image']->store('uploadedPostImages', 'public');
-
-            //Resize image
-            Image::make($data['image'])
-                ->fit($data['width'], $data['height'])
-                ->save(storage_path('app/public/uploadedPostImages/' . $data['image']->hashName()));
-        }
-
-        //Store body and image in the database
-        $post = request()->user()->posts()->create([
-            'body' => $data['body'],
-            'image' => $image ?? null,
-        ]);
+        $post = request()->user()->posts()->create($data);
 
         return (new PostResource($post))->response()->setStatusCode(201);
     }

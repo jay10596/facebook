@@ -4,6 +4,7 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Resources\Json\JsonResource;
 use App\Http\Resources\User as UserResource;
+use App\Http\Resources\Picture as PictureResource;
 
 
 class Post extends JsonResource
@@ -13,9 +14,10 @@ class Post extends JsonResource
         return [
             'id' => $this->id,
             'body' => $this->body,
-            'image' => $this->image,
             'user_id' => $this->user_id,
             'created_at' => $this->created_at->diffForHumans(),
+
+            'single_picture' => new PictureResource($this->singlePicture),
 
             'likes' => new LikeCollection($this->likes),
 

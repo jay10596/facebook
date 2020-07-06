@@ -11,7 +11,7 @@ use App\Comment;
 
 class Post extends Model
 {
-    protected $fillable = ['body', 'image', 'user_id'];
+    protected $fillable = ['body', 'user_id'];
 
     public function getPathAttribute()
     {
@@ -31,5 +31,17 @@ class Post extends Model
     public function likes()
     {
         return $this->belongsToMany(User::class, 'likes', 'post_id', 'user_id');
+    }
+
+    public function pictures()
+    {
+        return $this->hasMany(Picture::class);
+    }
+
+    public function singlePicture()
+    {
+        return $this->hasOne(Picture::class)
+            ->orderByDesc('id')
+            ->where('type', 'single');
     }
 }

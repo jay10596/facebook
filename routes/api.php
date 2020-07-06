@@ -31,4 +31,5 @@ Route::middleware('auth:api')->group(function () {
 
     //IMAGE
     Route::post('/upload-images', 'ImageController@uploadImage');
+    Route::post('/upload-pictures', 'PictureController@uploadPicture');
 });
