@@ -6905,6 +6905,12 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
 
 /* harmony default export */ __webpack_exports__["default"] = ({
   name: "PostCard",
@@ -7306,6 +7312,12 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 //
 //
 //
+//
+//
+//
+//
+//
+//
 
 
 
@@ -7355,7 +7367,9 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
         //When the image is uploaded, it sends it right away which will give the error becasue we do not have the body in params.
         previewsContainer: '.dropzone-previews',
         previewTemplate: document.querySelector('#dz-template').innerHTML,
-        maxFiles: 1,
+        maxFiles: 5,
+        parallelUploads: 5,
+        uploadMultiple: true,
         params: {
           //Cannot pass body here because settings() load when the component is mounted. Use sending.
           'width': 750,
@@ -7372,10 +7386,10 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
         success: function success(e, res) {
           _this.dropzone.removeAllFiles();
 
-          _this.$store.commit('setPostBody', ''); //this.$store.dispatch('fetchAllPosts') Works but takes more time to load all posts
+          _this.$store.commit('setPostBody', ''); //this.$store.commit('pushPost', res) For multiple images post, it will commit the response multiple times.
 
 
-          _this.$store.commit('pushPost', res);
+          _this.$store.dispatch('fetchAllPosts');
         },
         maxfilesexceeded: function maxfilesexceeded(file) {
           _this.dropzone.removeAllFiles();
@@ -7415,8 +7429,6 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
       this.editMode = false;
       post.body = this.originalBody;
       this.$store.commit('cancelEdit', post);
-    },
-    getImage: function getImage(e) {//Can't solve it
     }
   }
 });
@@ -30427,6 +30439,28 @@ var render = function() {
           ])
         : _vm._e(),
       _vm._v(" "),
+      _vm.post.multiple_pictures
+        ? _c(
+            "div",
+            { staticClass: "flex" },
+            _vm._l(_vm.post.multiple_pictures.data, function(picture) {
+              return _c(
+                "div",
+                { staticClass: "mr-1 mt-2", attrs: { id: "picture.id" } },
+                [
+                  _c("img", {
+                    attrs: {
+                      src: "/storage/" + picture.path,
+                      alt: "Post Picture"
+                    }
+                  })
+                ]
+              )
+            }),
+            0
+          )
+        : _vm._e(),
+      _vm._v(" "),
       _c("div", { staticClass: "flex justify-between p-4 text-sm" }, [
         _c("p", [
           _c("i", { staticClass: "far fa-thumbs-up text-blue-500 mr-1" }),
@@ -30962,6 +30996,28 @@ var render = function() {
         ])
       : _vm._e(),
     _vm._v(" "),
+    _vm.editMode && _vm.post.multiple_pictures
+      ? _c(
+          "div",
+          { staticClass: "flex" },
+          _vm._l(_vm.post.multiple_pictures.data, function(picture) {
+            return _c(
+              "div",
+              { staticClass: "mr-1 mt-5", attrs: { id: "picture.id" } },
+              [
+                _c("img", {
+                  attrs: {
+                    src: "/storage/" + picture.path,
+                    alt: "Post Picture"
+                  }
+                })
+              ]
+            )
+          }),
+          0
+        )
+      : _vm._e(),
+    _vm._v(" "),
     _vm._m(1)
   ])
 }
@@ -30978,10 +31034,10 @@ var staticRenderFns = [
     var _vm = this
     var _h = _vm.$createElement
     var _c = _vm._self._c || _h
-    return _c("div", { staticClass: "dropzone-previews" }, [
+    return _c("div", { staticClass: "dropzone-previews flex" }, [
       _c("div", { staticClass: "hidden", attrs: { id: "dz-template" } }, [
         _c("div", { staticClass: "dz-preview dz-file-preview mt-4" }, [
-          _c("div", { staticClass: "dz-details" }, [
+          _c("div", { staticClass: "dz-details mr-1" }, [
             _c("img", {
               staticClass: "w-32 h-32",
               attrs: { "data-dz-thumbnail": "", alt: "" }

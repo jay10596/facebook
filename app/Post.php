@@ -44,4 +44,10 @@ class Post extends Model
             ->orderByDesc('id')
             ->where('type', 'single');
     }
+
+    public function multiplePictures()
+    {
+        return $this->hasMany(Picture::class)
+            ->where('type', 'album');
+    }
 }

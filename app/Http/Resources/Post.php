@@ -19,6 +19,8 @@ class Post extends JsonResource
 
             'single_picture' => new PictureResource($this->singlePicture),
 
+            'multiple_pictures' => new PictureCollection($this->multiplePictures),
+
             'likes' => new LikeCollection($this->likes),
 
             'comments' => new CommentCollection($this->comments),

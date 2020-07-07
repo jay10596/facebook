@@ -36,10 +36,16 @@
             <img :src="'/storage/' + post.single_picture.path" class="w-full h-full my-4" alt="">
         </div>
 
-        <div class="dropzone-previews">
+        <div v-if="editMode && post.multiple_pictures" class="flex">
+            <div v-for="picture in post.multiple_pictures.data" id="picture.id" class="mr-1 mt-5">
+                <img :src="'/storage/' + picture.path" alt="Post Picture">
+            </div>
+        </div>
+
+        <div class="dropzone-previews flex">
             <div id="dz-template" class="hidden">
                 <div class="dz-preview dz-file-preview mt-4">
-                    <div class="dz-details">
+                    <div class="dz-details mr-1">
                         <img data-dz-thumbnail class="w-32 h-32" alt="">
 
                         <button data-dz-remove class="mt-2 ml-6 text-sm focus:outline-none"> <i class="fas fa-minus-circle text-red-500"></i> Remove</button>
@@ -107,7 +113,9 @@
                     autoProcessQueue: false, //When the image is uploaded, it sends it right away which will give the error becasue we do not have the body in params.
                     previewsContainer: '.dropzone-previews',
                     previewTemplate: document.querySelector('#dz-template').innerHTML,
-                    maxFiles: 1,
+                    maxFiles: 5,
+                    parallelUploads: 5,
+                    uploadMultiple:true,
                     params: { //Cannot pass body here because settings() load when the component is mounted. Use sending.
                         'width': 750,
                         'height': 750,
@@ -126,8 +134,8 @@
 
                         this.$store.commit('setPostBody', '')
 
-                        //this.$store.dispatch('fetchAllPosts') Works but takes more time to load all posts
-                        this.$store.commit('pushPost', res)
+                        //this.$store.commit('pushPost', res) For multiple images post, it will commit the response multiple times.
+                        this.$store.dispatch('fetchAllPosts')
                     },
                     maxfilesexceeded: file => {
                         this.dropzone.removeAllFiles()
@@ -171,10 +179,6 @@
                 post.body = this.originalBody
 
                 this.$store.commit('cancelEdit', post)
-            },
-
-            getImage(e) {
-                //Can't solve it
             }
         }
     }

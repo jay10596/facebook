@@ -3,6 +3,8 @@
 namespace Tests\Feature;
 
 use App\Friend;
+use App\Image;
+use App\Picture;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use App\Http\Resources\UserResource;
@@ -48,87 +50,6 @@ class PostTest extends TestCase
         return [
             'body' => 'This is a new post.',
         ];
-    }
-
-    /** @test */
-    public function auth_user_can_create_text_post()
-    {   //One way to create a post
-        $post = factory(Post::class)->create(['user_id' => $this->user->id]);
-
-        //Second way to create a post
-        $response = $this->post('/api/posts', $this->data(), $this->server);
-
-        $response->assertStatus(201);
-
-        $this->assertCount(2, Post::all());
-
-
-        $posts = Post::all();
-        $post = $posts->last();
-
-        $this->assertEquals('This is a new post.', $post->body);
-        $this->assertEquals($post->user_id, $this->user->id);
-
-
-        $response->assertJson([
-            'data' => [
-                'id' => $post->id,
-                'body' => $post->body,
-                'user_id' => $post->user_id,
-                'created_at' => $post->created_at->diffForHumans(),
-
-                'posted_by' => [
-                    'id' => $this->user->id,
-                    'name' => $this->user->name,
-                    'email' => $this->user->email,
-                ],
-
-                'path' => $post->path
-            ]
-        ]);
-    }
-
-    /** @test */
-    public function auth_user_can_create_image_post()
-    {
-        $this->withoutExceptionHandling();
-
-        $this->actingAs($user = factory(User::class)->create(), 'api'); //It just logs in the user
-
-        $file = UploadedFile::fake()->image('postImage.jpg');
-
-        $response = $this->post('/api/posts', [
-            'body' => 'test Body',
-            'image' => $file,
-            'width' => 750,
-            'height' => 750,
-            'user_id' => $user->id
-        ])->assertStatus(201);
-
-        Storage::disk('public')->assertExists('uploadedPostImages/' . $file->hashName());
-
-        $this->assertCount(1, Post::all());
-
-        $posts = Post::all();
-        $post = $posts->first();
-
-        $response->assertJson([
-            'data' => [
-                'id' => $post->id,
-                'body' => $post->body,
-                'image' => $post->image,
-                'user_id' => $post->user_id,
-                'created_at' => $post->created_at->diffForHumans(),
-
-                'posted_by' => [
-                    'id' => $user->id,
-                    'name' => $user->name,
-                    'email' => $user->email,
-                ],
-
-                'path' => $post->path
-            ]
-        ]);
     }
 
     /** @test */
@@ -207,6 +128,185 @@ class PostTest extends TestCase
     }
 
     /** @test */
+    public function auth_user_can_create_text_post()
+    {   //One way to create a post
+        $post = factory(Post::class)->create(['user_id' => $this->user->id]);
+
+        //Second way to create a post
+        $response = $this->post('/api/posts', $this->data(), $this->server);
+
+        $response->assertStatus(201);
+
+        $this->assertCount(2, Post::all());
+
+        $posts = Post::all();
+        $post = $posts->last();
+
+        $this->assertEquals('This is a new post.', $post->body);
+        $this->assertEquals($post->user_id, $this->user->id);
+
+        $response->assertJson([
+            'data' => [
+                'id' => $post->id,
+                'body' => $post->body,
+                'user_id' => $post->user_id,
+                'created_at' => $post->created_at->diffForHumans(),
+
+                'posted_by' => [
+                    'id' => $this->user->id,
+                    'name' => $this->user->name,
+                    'email' => $this->user->email,
+                ],
+
+                'path' => $post->path
+            ]
+        ]);
+    }
+
+    /** @test */
+    public function auth_user_can_create_single_picture_post()
+    {
+        $this->actingAs($user = factory(User::class)->create(), 'api'); //It just logs in the user
+
+        $file = UploadedFile::fake()->image('postImage.jpg');
+
+        $response = $this->post('/api/upload-pictures', [
+            'body' => 'test Body',
+            'image' => [$file],
+            'post_id' => '',
+            'user_id' => $user->id
+        ])->assertStatus(201);
+
+        Storage::disk('public')->assertExists('uploadedPostImages/' . $file->hashName());
+
+        $this->assertCount(1, Post::all());
+        $this->assertCount(1, Picture::all());
+
+        $post = Post::first();
+        $picture = Picture::first();
+
+        $response->assertJson([
+            'data' => [
+                'id' => $post->id,
+                'body' => $post->body,
+                'user_id' => $post->user_id,
+                'created_at' => $post->created_at->diffForHumans(),
+
+                'comments' => [
+
+                ],
+
+                'likes' => [
+
+                ],
+
+                'single_picture' => [
+                    'id' => $picture->id,
+                    'path' => $picture->path,
+                    'type' => $picture->type,
+                ],
+
+                'multiple_pictures' => [
+
+                ],
+
+                'posted_by' => [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                ],
+
+                'path' => $post->path
+            ]
+        ]);
+    }
+
+    /** @test */
+    public function auth_user_can_create_multiple_pictures_post()
+    {
+        $this->withoutExceptionHandling();
+
+        $this->actingAs($user = factory(User::class)->create(), 'api'); //It just logs in the user
+
+        $file1 = UploadedFile::fake()->image('postImage1.jpg');
+        $file2 = UploadedFile::fake()->image('postImage2.jpg');
+        $file3 = UploadedFile::fake()->image('postImage3.jpg');
+
+        $response = $this->post('/api/upload-pictures', [
+            'body' => 'test Body',
+            'image' => [$file1, $file2, $file3],
+            'post_id' => '',
+            'user_id' => $user->id
+        ])->assertStatus(201);
+
+        Storage::disk('public')->assertExists('uploadedPostImages/' . $file1->hashName());
+        Storage::disk('public')->assertExists('uploadedPostImages/' . $file2->hashName());
+        Storage::disk('public')->assertExists('uploadedPostImages/' . $file3->hashName());
+
+        $this->assertCount(1, Post::all());
+        $this->assertCount(3, Picture::all());
+
+        $post = Post::first();
+        $pictures = Picture::all();
+        $picture1 = $pictures[0];
+        $picture2 = $pictures[1];
+        $picture3 = $pictures[2];
+
+        $response->assertJson([
+            'data' => [
+                'id' => $post->id,
+                'body' => $post->body,
+                'user_id' => $post->user_id,
+                'created_at' => $post->created_at->diffForHumans(),
+
+                'comments' => [
+
+                ],
+
+                'likes' => [
+
+                ],
+
+                'single_picture' => [
+
+                ],
+
+                'multiple_pictures' => [
+                    'data' => [
+                        [
+                            'id' => $picture1->id,
+                            'path' => $picture1->path,
+                            'type' => $picture1->type,
+                        ],
+                        [
+                            'id' => $picture2->id,
+                            'path' => $picture2->path,
+                            'type' => $picture2->type,
+                        ],
+                        [
+                            'id' => $picture3->id,
+                            'path' => $picture3->path,
+                            'type' => $picture3->type,
+                        ],
+                    ],
+                    'links' => [
+                        'self' => '/posts'
+                    ],
+                    'picture_count' => 3
+                ],
+
+                'posted_by' => [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                ],
+
+                'path' => $post->path
+            ]
+        ]);
+    }
+
+    /** @test */
     public function auth_user_can_update_text_post()
     {
         $this->actingAs($user = factory(User::class)->create(), 'api'); //It just logs in the user
@@ -240,7 +340,67 @@ class PostTest extends TestCase
     }
 
     /** @test */
-    public function auth_user_can_delete_text_post()
+    public function auth_user_can_update_picture_post()
+    {
+        $this->actingAs($user = factory(User::class)->create(), 'api'); //It just logs in the user
+
+        $file = UploadedFile::fake()->image('postImage.jpg');
+
+        $post = factory(Post::class)->create(['user_id' => $user->id]);
+
+        $response = $this->post('/api/upload-pictures', [
+            'body' => 'test Body',
+            'image' => [$file],
+            'post_id' => $post->id,
+            'user_id' => $user->id
+        ])->assertStatus(201);
+
+        Storage::disk('public')->assertExists('uploadedPostImages/' . $file->hashName());
+
+        $this->assertCount(1, Post::all());
+        $this->assertCount(1, Picture::all());
+
+        $post = Post::first();
+        $picture = Picture::first();
+
+        $response->assertJson([
+            'data' => [
+                'id' => $post->id,
+                'body' => 'test Body',
+                'user_id' => $post->user_id,
+                'created_at' => $post->created_at->diffForHumans(),
+
+                'comments' => [
+
+                ],
+
+                'likes' => [
+
+                ],
+
+                'single_picture' => [
+                    'id' => $picture->id,
+                    'path' => $picture->path,
+                    'type' => $picture->type,
+                ],
+
+                'multiple_pictures' => [
+
+                ],
+
+                'posted_by' => [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                ],
+
+                'path' => $post->path
+            ]
+        ]);
+    }
+
+    /** @test */
+    public function auth_user_can_delete_posts()
     {
         $this->actingAs($user = factory(User::class)->create(), 'api'); //It just logs in the user
 

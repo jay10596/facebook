@@ -28,6 +28,12 @@
             <img :src="'/storage/' + post.single_picture.path" class="w-full h-full mt-2" alt="Post Picture">
         </div>
 
+        <div v-if="post.multiple_pictures" class="flex">
+            <div v-for="picture in post.multiple_pictures.data" id="picture.id" class="mr-1 mt-2">
+                <img :src="'/storage/' + picture.path" alt="Post Picture">
+            </div>
+        </div>
+
         <div class="flex justify-between p-4 text-sm">
             <p><i class="far fa-thumbs-up text-blue-500 mr-1"></i>{{post.likes.like_count}} Likes</p>
 
